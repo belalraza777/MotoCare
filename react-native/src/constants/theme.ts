@@ -1,65 +1,81 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import '@/global.css';
-
-import { Platform } from 'react-native';
-
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#2cd8e8',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    background: '#F7F6F2',
+    surface: '#FFFFFF',
+    card: '#FFFFFF',
+
+    text: '#181817',
+    textSecondary: '#6F6D67',
+    textMuted: '#8C8880',
+
+    border: '#E5E2DB',
+
+    primary: '#A9652B',
+    primarySoft: '#E8D2B5',
+
+    success: '#22A06B',
+    warning: '#D99A00',
+    error: '#D64545',
+    info: '#3B82F6',
+
+    overlay: 'rgba(24, 24, 23, 0.06)',
   },
+
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    background: '#0D0F10',
+    surface: '#151819',
+    card: '#1C2022',
+
+    text: '#F4F2ED',
+    textSecondary: '#A8A69F',
+    textMuted: '#77756F',
+
+    border: '#2B2F31',
+
+    primary: '#C27A3A',
+    primarySoft: '#3A2B20',
+
+    success: '#35B77A',
+    warning: '#E0A52A',
+    error: '#E05A5A',
+    info: '#5B9CFF',
+
+    overlay: 'rgba(255, 255, 255, 0.06)',
   },
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type ThemeColors = typeof Colors.light;
+export type ThemeName = keyof typeof Colors;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Radius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+} as const;
 
 export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export const Typography = {
+  fontFamily: 'System',
+  size: {
+    xs: 12,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 24,
+    xxl: 30,
+  },
+  weight: {
+    regular: '400',
+    medium: '500',
+    semibold: '600',
+    bold: '700',
+  },
+} as const;

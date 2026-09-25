@@ -3,9 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import { useSSO, useSignIn } from '@clerk/clerk-expo';
 import * as AuthSession from 'expo-auth-session';
 import { Link, useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
+import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
 
 const redirectUrl = AuthSession.makeRedirectUri({ path: 'sso-callback' });
 
+// Helper function to extract a user-friendly error message from Clerk errors
 function getClerkErrorMessage(err: unknown, fallback: string) {
   const clerkErr = err as { errors?: Array<{ message?: string; code?: string; meta?: { reason?: string } }> };
   const first = clerkErr.errors?.[0];
@@ -18,8 +21,12 @@ function getClerkErrorMessage(err: unknown, fallback: string) {
   return first?.message ?? fallback;
 }
 
+
 export default function SignInScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   const { startSSOFlow } = useSSO();
   const { signIn, setActive, isLoaded } = useSignIn();
   const oauthInFlight = useRef(false);
@@ -31,7 +38,6 @@ export default function SignInScreen() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState('');
 
-  //Handle Google OAuth sign-in
   const onGooglePress = useCallback(async () => {
     if (!isLoaded) {
       setError('Authentication is still loading. Please try again.');
@@ -67,7 +73,6 @@ export default function SignInScreen() {
     }
   }, [isLoaded, startSSOFlow, router]);
 
-  //Handle email/password sign-in
   const onEmailSignIn = async () => {
     if (!isLoaded) {
       setError('Authentication is still loading. Please try again.');
@@ -111,7 +116,6 @@ export default function SignInScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {/* Primary action */}
       <TouchableOpacity
         style={[styles.googleButton, (oauthLoading || !isLoaded) && styles.disabled]}
         onPress={onGooglePress}
@@ -122,7 +126,6 @@ export default function SignInScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Secondary path, collapsed by default */}
       {!showEmailForm ? (
         <TouchableOpacity onPress={() => setShowEmailForm(true)} style={styles.toggleLink}>
           <Text style={styles.toggleLinkText}>Sign in with email instead</Text>
@@ -138,6 +141,7 @@ export default function SignInScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
+            placeholderTextColor={colors.textMuted}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -146,6 +150,7 @@ export default function SignInScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
+            placeholderTextColor={colors.textMuted}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -170,32 +175,84 @@ export default function SignInScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  brand: { alignItems: 'center', marginBottom: 40 },
-  title: { fontSize: 30, fontWeight: 'bold' },
-  subtitle: { fontSize: 14, color: '#888', marginTop: 6, textAlign: 'center' },
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: Spacing.lg,
+      backgroundColor: colors.background,
+    },
+    brand: { alignItems: 'center', marginBottom: Spacing.xl * 1.5 },
+    title: {
+      fontSize: Typography.size.xxl,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+    },
+    subtitle: {
+      fontSize: Typography.size.sm,
+      color: colors.textSecondary,
+      marginTop: Spacing.xs + 2,
+      textAlign: 'center',
+    },
 
-  googleButton: {
-    backgroundColor: '#111',
-    paddingVertical: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  googleButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+    googleButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: Spacing.lg,
+      borderRadius: Radius.md,
+      alignItems: 'center',
+    },
+    googleButtonText: {
+      fontSize: Typography.size.md,
+      fontWeight: Typography.weight.semibold,
+      color: '#fff',
+    },
 
-  toggleLink: { marginTop: 20, alignItems: 'center' },
-  toggleLinkText: { color: '#2563eb', fontSize: 14, fontWeight: '500' },
+    toggleLink: { marginTop: Spacing.xl - 4, alignItems: 'center' },
+    toggleLinkText: {
+      color: colors.primary,
+      fontSize: Typography.size.sm,
+      fontWeight: Typography.weight.medium,
+    },
 
-  emailForm: { marginTop: 8 },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#ddd' },
-  dividerText: { marginHorizontal: 10, color: '#999', fontSize: 12 },
+    emailForm: { marginTop: Spacing.sm },
+    divider: { flexDirection: 'row', alignItems: 'center', marginVertical: Spacing.xl - 4 },
+    dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+    dividerText: {
+      marginHorizontal: Spacing.md - 2,
+      color: colors.textMuted,
+      fontSize: Typography.size.xs,
+    },
 
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  button: { backgroundColor: '#2563eb', padding: 14, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: '600' },
-  link: { color: '#2563eb', textAlign: 'center', marginTop: 16 },
-  error: { color: '#ef4444', marginBottom: 16, textAlign: 'center' },
-  disabled: { opacity: 0.6 },
-});
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: Radius.sm,
+      padding: Spacing.md,
+      marginBottom: Spacing.md,
+      color: colors.text,
+      backgroundColor: colors.surface,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      padding: Spacing.md + 2,
+      borderRadius: Radius.sm,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#fff',
+      fontWeight: Typography.weight.semibold,
+    },
+    link: {
+      color: colors.primary,
+      textAlign: 'center',
+      marginTop: Spacing.lg,
+    },
+    error: {
+      color: colors.error,
+      marginBottom: Spacing.lg,
+      textAlign: 'center',
+    },
+    disabled: { opacity: 0.6 },
+  });
+}

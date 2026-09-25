@@ -1,9 +1,10 @@
-import { User as UserType } from '../models/user.model';
+import { IUser } from '../models/user.model';
 
-declare global {
-  namespace Express {
+declare module "express-serve-static-core" {
     interface Request {
-      localUser?: InstanceType<typeof UserType>;
+      localUser?: IUser;
     }
   }
-}
+
+
+export {};

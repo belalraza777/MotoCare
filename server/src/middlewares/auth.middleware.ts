@@ -1,10 +1,10 @@
 import { getAuth, clerkClient } from '@clerk/express';
-import { User } from '../models/user.model';
+import { User,IUser } from '../models/user.model';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 
 // In-memory cache for user data
-const userCache = new Map<string, { user: any; expiresAt: number }>();
+const userCache = new Map<string, { user: IUser; expiresAt: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 
