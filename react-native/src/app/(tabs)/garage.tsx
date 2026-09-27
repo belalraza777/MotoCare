@@ -1,14 +1,22 @@
 import { useCallback, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useApiClient } from '../../api/client';
+import { useUser } from '@clerk/clerk-expo';
 import { Bike } from '../../types/bike.types';
+import { BikeCard } from '../../components/Bike/BikeCard';
+import { LoadingView, ErrorView } from '../../components/ui/StateViews';
+import { Fab } from '../../components/ui/Fab';
+import { Button } from '../../components/ui/Button';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export default function GarageScreen() {
   const api = useApiClient();
   const router = useRouter();
+  const { user } = useUser();
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -17,180 +25,97 @@ export default function GarageScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load bikes from the API
-  const loadBikes = useCallback(async () => {
+  const load = useCallback(async () => {
     setError(null);
     try {
-      const data = await api.bikes.getAll();
-      setBikes(data);
+      setBikes(await api.bikes.getAll());
     } catch (err: any) {
-      console.error('Failed to load bikes:', err);
-
-      // Distinguish between a real server error, a network/connectivity
-      // failure, and anything else — so the message actually helps the user
-      if (err.response) {
-        setError(err.response.data?.message ?? 'Something went wrong. Please try again.');
-      } else if (err.request) {
-        setError('Cannot reach the server. Check your connection and try again.');
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
+      setError(err.response?.data?.message ?? 'Failed to load bikes');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, [api]);
 
-  // Refetch every time this screen comes into focus — catches bikes added
-  // on the Add Bike screen without needing a manual refresh
-  useFocusEffect(
-    useCallback(() => {
-      loadBikes();
-    }, [loadBikes])
-  );
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadBikes();
-  };
+  if (loading) return <LoadingView />;
+  if (error) return <ErrorView message={error} onRetry={load} />;
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <Text style={{ color: colors.text }}>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadBikes}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const firstName = user?.firstName || 'Rider';
 
   return (
-    <View style={styles.container}>
-
-      <Text>Welcome to the Garage</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>  
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Good to see you,</Text>
+        <Text style={styles.name}>{firstName} 🏍️</Text>
+      </View>
 
       <FlatList
         data={bikes}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={bikes.length === 0 ? styles.center : styles.list}
+        contentContainerStyle={[
+          styles.listContent,
+          bikes.length === 0 && styles.listContentEmpty,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary} // spinner color on iOS
-            colors={[colors.primary]} // spinner color on Android
+            onRefresh={() => { setRefreshing(true); load(); }}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyText}>No bikes yet</Text>
-            <Text style={styles.emptySubtext}>Add your first bike to get started</Text>
+            <Text style={styles.emptyIcon}>🏍️</Text>
+            <Text style={styles.emptyTitle}>Your garage is empty</Text>
+            <Text style={styles.emptySubtitle}>
+              Add your first bike to start tracking service, fuel, and documents
+            </Text>
+            <View style={styles.emptyButton}>
+              <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
+            </View>
           </View>
         }
         renderItem={({ item }) => (
-          // Each bike navigates to its dashboard via a typed dynamic route
-          <TouchableOpacity
-            style={styles.bikeCard}
+          <BikeCard
+            item={item}
             onPress={() => router.push({ pathname: '/bike/[id]', params: { id: item._id } })}
-          >
-            <Text style={styles.bikeName}>{item.brand} {item.model}</Text>
-            {item.variant ? <Text style={styles.bikeVariant}>{item.variant}</Text> : null}
-            <View style={styles.bikeMeta}>
-              <Text style={styles.bikeMetaText}>{item.currentKm.toLocaleString()} km</Text>
-              <Text style={styles.bikeMetaText}>•</Text>
-              <Text style={styles.bikeMetaText}>{item.fuelType}</Text>
-            </View>
-          </TouchableOpacity>
+          />
         )}
       />
 
-      {/* Floating action button — always visible, opens the Add Bike form */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/bike/add')}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
-    </View>
+      {/* Only show the FAB once there's at least one bike — when empty,
+          the big "Add Your First Bike" button above is the primary CTA,
+          so a second floating button would be redundant */}
+      {bikes.length > 0 && <Fab onPress={() => router.push('/bike/add')} bottomOffset={60} />}
+    </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.lg },
-    list: { padding: Spacing.lg },
 
-    empty: { alignItems: 'center', marginTop: 100 },
-    emptyText: {
-      fontSize: Typography.size.lg,
-      fontWeight: Typography.weight.semibold,
-      color: colors.text,
-    },
-    emptySubtext: {
+    header: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
+    greeting: { fontSize: Typography.size.sm, color: colors.textSecondary },
+    name: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, marginTop: 2 },
+
+    listContent: { padding: Spacing.lg, paddingTop: Spacing.sm, paddingBottom: 100 }, // clears the FAB
+    listContentEmpty: { flexGrow: 1 },
+
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
+    emptyIcon: { fontSize: 48, marginBottom: Spacing.md },
+    emptyTitle: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
+    emptySubtitle: {
       fontSize: Typography.size.sm,
       color: colors.textMuted,
-      marginTop: Spacing.xs,
-    },
-
-    errorText: {
-      fontSize: Typography.size.md - 1,
-      color: colors.error,
       textAlign: 'center',
-      marginBottom: Spacing.lg,
+      marginTop: Spacing.xs,
+      marginBottom: Spacing.xl,
+      lineHeight: 20,
     },
-    retryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: Spacing.md - 2,
-      paddingHorizontal: Spacing.xl,
-      borderRadius: Radius.sm,
-    },
-    retryButtonText: { color: '#fff', fontWeight: Typography.weight.semibold },
-
-    bikeCard: {
-      backgroundColor: colors.card,
-      borderRadius: Radius.lg,
-      padding: Spacing.lg,
-      marginBottom: Spacing.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    bikeName: {
-      fontSize: Typography.size.lg,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-    },
-    bikeVariant: {
-      fontSize: Typography.size.sm,
-      color: colors.textSecondary,
-      marginTop: 2,
-    },
-    bikeMeta: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm },
-    bikeMetaText: { fontSize: Typography.size.xs + 1, color: colors.textMuted },
-
-    // Fixed position bottom-right, floats above the list content
-    fab: {
-      position: 'absolute',
-      bottom: Spacing.lg + 8,
-      right: Spacing.lg + 8,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      elevation: 4, // Android shadow
-      shadowColor: '#000', // iOS shadow
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-    },
-    fabText: { color: '#fff', fontSize: 28, lineHeight: 30 },
+    emptyButton: { width: '100%' },
   });
 }

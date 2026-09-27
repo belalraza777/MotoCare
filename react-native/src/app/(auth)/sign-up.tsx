@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
-  // Tracks whether we're on the "enter your code" step vs the initial form
+  // true once we're on the "enter code" step instead of the form
   const [pendingVerification, setPendingVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,7 +27,7 @@ export default function SignUpScreen() {
     setError('');
     try {
       await signUp.create({ emailAddress: email.trim(), password });
-      // Sends the 6-digit code to the user's email — required before the account is fully active
+      // sends the 6-digit code — account isn't active until it's verified
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (err: any) {
@@ -43,9 +44,6 @@ export default function SignUpScreen() {
     try {
       const result = await signUp.attemptEmailAddressVerification({ code });
 
-      // Clerk only returns 'complete' once ALL required fields/verifications
-      // are satisfied (see Clerk dashboard settings) — anything else means
-      // something is still missing, so surface the raw status for debugging
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
         router.replace('/(tabs)/garage');
@@ -60,12 +58,18 @@ export default function SignUpScreen() {
     }
   };
 
-  // Second screen: shown only after sign-up succeeds and a code has been sent
   if (pendingVerification) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Verify Email</Text>
-        <Text style={styles.subtitle}>Code sent to {email}</Text>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.brand}>
+          <Image
+            source={require('../../../assets/motocarelogo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>Verify Email</Text>
+          <Text style={styles.subtitle}>Code sent to {email}</Text>
+        </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -85,14 +89,21 @@ export default function SignUpScreen() {
         >
           <Text style={styles.buttonText}>{loading ? 'Verifying...' : 'Verify'}</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  // First screen: email + password entry
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.brand}>
+        <Image
+          source={require('../../../assets/motocarelogo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Start tracking your ride today</Text>
+      </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -124,9 +135,9 @@ export default function SignUpScreen() {
 
       <Link href="/(auth)/sign-in" style={styles.link}>Already have an account? Sign In</Link>
 
-      {/* Required DOM hook for Clerk's bot-protection widget on password sign-up */}
+      {/* required DOM hook for Clerk's bot-protection widget */}
       <View nativeID="clerk-captcha" />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -135,21 +146,22 @@ function createStyles(colors: ThemeColors) {
     container: {
       flex: 1,
       justifyContent: 'center',
-      padding: Spacing.lg,
+      padding: Spacing.xl,
       backgroundColor: colors.background,
     },
+    brand: { alignItems: 'center', marginBottom: Spacing.xl },
+    logo: { width: 72, height: 72, marginBottom: Spacing.md },
     title: {
       fontSize: Typography.size.xxl,
       fontWeight: Typography.weight.bold,
       color: colors.text,
       textAlign: 'center',
-      marginBottom: Spacing.lg,
     },
     subtitle: {
       fontSize: Typography.size.sm,
       color: colors.textSecondary,
       textAlign: 'center',
-      marginBottom: Spacing.lg,
+      marginTop: Spacing.xs + 2,
     },
     input: {
       borderWidth: 1,

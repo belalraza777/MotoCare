@@ -1,10 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSSO, useSignIn } from '@clerk/clerk-expo';
 import * as AuthSession from 'expo-auth-session';
 import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const redirectUrl = AuthSession.makeRedirectUri({ path: 'sso-callback' });
 
@@ -38,6 +39,7 @@ export default function SignInScreen() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState('');
 
+  //Handle Google OAuth sign-in
   const onGooglePress = useCallback(async () => {
     if (!isLoaded) {
       setError('Authentication is still loading. Please try again.');
@@ -73,6 +75,7 @@ export default function SignInScreen() {
     }
   }, [isLoaded, startSSOFlow, router]);
 
+  // Handle email/password sign-in
   const onEmailSignIn = async () => {
     if (!isLoaded) {
       setError('Authentication is still loading. Please try again.');
@@ -108,8 +111,13 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.brand}>
+        <Image
+          source={require('../../../assets/motocarelogo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>MotoCare</Text>
         <Text style={styles.subtitle}>Track service, fuel & documents in one place</Text>
       </View>
@@ -120,9 +128,11 @@ export default function SignInScreen() {
         style={[styles.googleButton, (oauthLoading || !isLoaded) && styles.disabled]}
         onPress={onGooglePress}
         disabled={oauthLoading || !isLoaded}
+        activeOpacity={0.85}
       >
+        <Text style={styles.googleG}>G</Text>
         <Text style={styles.googleButtonText}>
-          {!isLoaded ? 'Loading...' : oauthLoading ? 'Signing in...' : '🔵  Continue with Google'}
+          {!isLoaded ? 'Loading...' : oauthLoading ? 'Signing in...' : 'Continue with Google'}
         </Text>
       </TouchableOpacity>
 
@@ -170,8 +180,10 @@ export default function SignInScreen() {
         </View>
       )}
 
+      <Text style={styles.footer}>Ride Better · Maintain Longer</Text>
+
       <View nativeID="clerk-captcha" />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -180,14 +192,17 @@ function createStyles(colors: ThemeColors) {
     container: {
       flex: 1,
       justifyContent: 'center',
-      padding: Spacing.lg,
+      padding: Spacing.xl,
       backgroundColor: colors.background,
     },
+
     brand: { alignItems: 'center', marginBottom: Spacing.xl * 1.5 },
+    logo: { width: 84, height: 84, marginBottom: Spacing.md },
     title: {
-      fontSize: Typography.size.xxl,
+      fontSize: Typography.size.xxl + 4,
       fontWeight: Typography.weight.bold,
       color: colors.text,
+      letterSpacing: 0.5,
     },
     subtitle: {
       fontSize: Typography.size.sm,
@@ -197,10 +212,30 @@ function createStyles(colors: ThemeColors) {
     },
 
     googleButton: {
+      flexDirection: 'row',
       backgroundColor: colors.primary,
-      paddingVertical: Spacing.lg,
-      borderRadius: Radius.md,
+      paddingVertical: Spacing.lg - 2,
+      borderRadius: Radius.lg,
       alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    googleG: {
+      fontSize: Typography.size.lg,
+      fontWeight: Typography.weight.bold,
+      color: '#fff',
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      textAlign: 'center',
+      lineHeight: 22,
+      overflow: 'hidden',
     },
     googleButtonText: {
       fontSize: Typography.size.md,
@@ -254,5 +289,14 @@ function createStyles(colors: ThemeColors) {
       textAlign: 'center',
     },
     disabled: { opacity: 0.6 },
+
+    footer: {
+      position: 'absolute',
+      bottom: Spacing.xl,
+      alignSelf: 'center',
+      fontSize: Typography.size.xs,
+      color: colors.textMuted,
+      letterSpacing: 0.5,
+    },
   });
 }

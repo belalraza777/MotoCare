@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useAuth } from '@clerk/clerk-expo';
 import { useMemo } from 'react';
 import { createBikeApi } from './bike.api';
+import { createMaintenanceApi } from './maintenance.api';
 
 export function useApiClient() {
   const { getToken } = useAuth();
@@ -25,6 +26,7 @@ export function useApiClient() {
     // Add more API modules here as needed
     return {
       bikes: createBikeApi(instance),
+      maintenance: createMaintenanceApi(instance),
     };
   }, [getToken]);
 }
