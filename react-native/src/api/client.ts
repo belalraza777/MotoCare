@@ -3,6 +3,8 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useMemo } from 'react';
 import { createBikeApi } from './bike.api';
 import { createMaintenanceApi } from './maintenance.api';
+import { createFuelApi } from './fuel.api';
+
 
 export function useApiClient() {
   const { getToken } = useAuth();
@@ -27,6 +29,7 @@ export function useApiClient() {
     return {
       bikes: createBikeApi(instance),
       maintenance: createMaintenanceApi(instance),
+      fuel: createFuelApi(instance),
     };
   }, [getToken]);
 }
