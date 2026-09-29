@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, Text } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApiClient } from '../../../../api/client';
 import { Fuel } from '../../../../types/fuel.types';
@@ -8,6 +8,7 @@ import { LoadingView, ErrorView, EmptyView } from '../../../../components/ui/Sta
 import { Fab } from '../../../../components/ui/Fab';
 import { useTheme } from '../../../../context/ThemeContext';
 import { Spacing } from '../../../../constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FuelListScreen() {
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
@@ -36,7 +37,10 @@ export default function FuelListScreen() {
   if (error) return <ErrorView message={error} onRetry={load} />;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: Spacing.md, paddingHorizontal: Spacing.lg }}>
+        Fuel Records
+      </Text>
       <FlatList
         data={records}
         keyExtractor={(item) => item._id}
@@ -55,6 +59,6 @@ export default function FuelListScreen() {
         )}
       />
       <Fab onPress={() => router.push({ pathname: '/bike/[id]/fuel/add', params: { id: bikeId } })} />
-    </View>
+    </SafeAreaView>
   );
 }
