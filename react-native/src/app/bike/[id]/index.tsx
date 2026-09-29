@@ -109,9 +109,15 @@ export default function BikeDashboardScreen() {
         <View style={[styles.navRow, styles.navRowDisabled]}>
           <Text style={styles.navRowTextDisabled}>🛠️  Service (coming soon)</Text>
         </View>
-        <View style={[styles.navRow, styles.navRowDisabled]}>
-          <Text style={styles.navRowTextDisabled}>⛽  Fuel (coming soon)</Text>
-        </View>
+
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push({ pathname: '/bike/[id]/fuel', params: { id: bikeId } })}
+        >
+          <Text style={styles.navRowText}>⛽  Fuel</Text>
+          <Text style={styles.navRowArrow}>›</Text>
+        </TouchableOpacity>
+        
         <View style={[styles.navRow, styles.navRowDisabled]}>
           <Text style={styles.navRowTextDisabled}>📄  Documents (coming soon)</Text>
         </View>
