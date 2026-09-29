@@ -6,7 +6,9 @@ import { Link, useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as WebBrowser from 'expo-web-browser';
 
+WebBrowser.maybeCompleteAuthSession();
 const redirectUrl = AuthSession.makeRedirectUri({ path: 'sso-callback' });
 
 // Helper function to extract a user-friendly error message from Clerk errors
