@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { createBikeApi } from './bike.api';
 import { createMaintenanceApi } from './maintenance.api';
 import { createFuelApi } from './fuel.api';
-
+import { createServiceApi } from './service.api';
 
 export function useApiClient() {
   const { getToken } = useAuth();
@@ -30,6 +30,7 @@ export function useApiClient() {
       bikes: createBikeApi(instance),
       maintenance: createMaintenanceApi(instance),
       fuel: createFuelApi(instance),
+      services: createServiceApi(instance),
     };
   }, [getToken]);
 }

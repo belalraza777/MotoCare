@@ -106,9 +106,13 @@ export default function BikeDashboardScreen() {
 
         {/* Placeholders for features not built yet — kept visible so the
           layout doesn't need reshaping when each one is added */}
-        <View style={[styles.navRow, styles.navRowDisabled]}>
-          <Text style={styles.navRowTextDisabled}>🛠️  Service (coming soon)</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push({ pathname: '/bike/[id]/service', params: { id: bikeId } })}
+        >
+          <Text style={styles.navRowText}>🛠️  Service</Text>
+          <Text style={styles.navRowArrow}>›</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navRow}
@@ -117,7 +121,7 @@ export default function BikeDashboardScreen() {
           <Text style={styles.navRowText}>⛽  Fuel</Text>
           <Text style={styles.navRowArrow}>›</Text>
         </TouchableOpacity>
-        
+
         <View style={[styles.navRow, styles.navRowDisabled]}>
           <Text style={styles.navRowTextDisabled}>📄  Documents (coming soon)</Text>
         </View>

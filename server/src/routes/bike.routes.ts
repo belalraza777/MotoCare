@@ -3,6 +3,7 @@ import { requireAuth } from '../middlewares/auth.middleware';
 import * as bikeController from '../controllers/bike.controller';
 import maintenanceRoutes from './maintenance.routes';
 import fuelRoutes from './fuel.routes';
+import serviceRoutes from './service.routes';
 
 
 const router = Router();
@@ -20,5 +21,8 @@ router.delete('/:id', bikeController.deleteBike);
 router.use('/:bikeId/maintenance', maintenanceRoutes);
 // Nested resource: /bikes/:bikeId/fuel/...
 router.use('/:bikeId/fuel', fuelRoutes);
+//Nested resource: /bikes/:bikeId/service/...
+router.use('/:bikeId/services', serviceRoutes);
+
 
 export default router;
