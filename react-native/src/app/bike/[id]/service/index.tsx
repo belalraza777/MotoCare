@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, FlatList } from 'react-native'
+import { View, FlatList,Text } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApiClient } from '../../../../api/client';
@@ -38,7 +38,12 @@ export default function ServiceListScreen() {
   if (error) return <ErrorView message={error} onRetry={load} />;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: Spacing.md, paddingHorizontal: Spacing.lg }}>
+        Service Records
+      </Text>
+
       <FlatList
         data={records}
         keyExtractor={(item) => item._id}

@@ -1,25 +1,38 @@
-// src/components/ui/Fab.tsx
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+
 import { useTheme } from '../../context/ThemeContext';
 import { Spacing, ThemeColors } from '../../constants/theme';
 
 interface FabProps {
   onPress: () => void;
-  bottomOffset?: number; // pass extra offset when a tab bar is present below this screen
+  bottomOffset?: number;
+  text?: string;
 }
 
-export function Fab({ onPress, bottomOffset = 0 }: FabProps) {
+export function Fab({
+  onPress,
+  bottomOffset = 0,
+  text = '+',
+}: FabProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors, bottomOffset);
 
   return (
-    <TouchableOpacity style={styles.fab} onPress={onPress}>
-      <Text style={styles.text}>+</Text>
+    <TouchableOpacity
+      style={styles.fab}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <Text style={styles.text}>{text}</Text>
     </TouchableOpacity>
   );
 }
 
-function createStyles(colors: ThemeColors, bottomOffset: number) {
+function createStyles(
+  colors: ThemeColors,
+  bottomOffset: number
+) {
   return StyleSheet.create({
     fab: {
       position: 'absolute',
@@ -37,6 +50,13 @@ function createStyles(colors: ThemeColors, bottomOffset: number) {
       shadowOpacity: 0.2,
       shadowRadius: 4,
     },
-    text: { color: '#fff', fontSize: 28, lineHeight: 30 },
+
+    text: {
+      color: '#fff',
+      fontSize: 28,
+      lineHeight: 30,
+      fontWeight: '400',
+    },
   });
 }
+

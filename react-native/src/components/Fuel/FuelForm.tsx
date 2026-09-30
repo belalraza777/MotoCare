@@ -19,6 +19,8 @@ interface FuelFormProps {
   onSubmit: (data: CreateFuelInput) => Promise<void>;
   submitLabel: string;
   loading: boolean;
+  onDelete?: () => void;
+  deleting?: boolean;
 }
 
 export function FuelForm({
@@ -26,6 +28,8 @@ export function FuelForm({
   onSubmit,
   submitLabel,
   loading,
+  onDelete,
+  deleting = false,
 }: FuelFormProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -97,6 +101,15 @@ export function FuelForm({
             onPress={handleSubmit}
             loading={loading}
           />
+
+          {onDelete && (
+            <Button
+              label="Delete Entry"
+              onPress={onDelete}
+              variant="danger"
+              loading={deleting}
+            />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -22,15 +22,15 @@ export const Colors = {
   },
 
   dark: {
-    background: '#0D0F10',
-    surface: '#151819',
-    card: '#1C2022',
+    background: '#0F1112',
+    surface: '#171A1C',
+    card: '#1D2123',
 
-    text: '#F4F2ED',
-    textSecondary: '#A8A69F',
+     text: '#F1EFEA',
+    textSecondary: '#AAA79F',
     textMuted: '#77756F',
 
-    border: '#2B2F31',
+    border: '#2B3032',
 
     primary: '#C27A3A',
     primarySoft: '#3A2B20',

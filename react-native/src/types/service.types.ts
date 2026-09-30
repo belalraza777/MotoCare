@@ -8,6 +8,7 @@ export interface Service {
   workshop?: string;
   maintenanceIds: Maintenance[]; // populated by the backend
   totalCost: number;
+  serviceCharge?: number;
   notes?: string;
   createdAt: string;
 }
@@ -24,5 +25,6 @@ export interface CreateServiceInput {
   odometer: number;
   workshop?: string;
   notes?: string;
+  serviceCharge?: number;
   maintenanceItems: MaintenanceItemInput[];
 }

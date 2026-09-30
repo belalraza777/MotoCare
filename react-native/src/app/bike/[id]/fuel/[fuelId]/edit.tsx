@@ -68,11 +68,13 @@ export default function EditFuelScreen() {
   if (error || !record) return <ErrorView message={error ?? 'Entry not found'} onRetry={load} />;
 
   return (
-    <>
-      <FuelForm initialValue={record} onSubmit={handleSubmit} submitLabel="Save Changes" loading={submitting} />
-      <View style={{ padding: Spacing.lg, paddingTop: 0 }}>
-        <Button label="Delete Entry" onPress={handleDelete} variant="danger" loading={deleting} />
-      </View>
-    </>
+    <FuelForm
+      initialValue={record}
+      onSubmit={handleSubmit}
+      submitLabel="Save Changes"
+      loading={submitting}
+      onDelete={handleDelete}
+      deleting={deleting}
+    />
   );
 }

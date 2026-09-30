@@ -98,19 +98,17 @@ export default function BikeDashboardScreen() {
 
         <TouchableOpacity
           style={styles.navRow}
-          onPress={() => router.push({ pathname: '/bike/[id]/maintenance', params: { id: bikeId } })}
-        >
-          <Text style={styles.navRowText}>🔧  Maintenance</Text>
-          <Text style={styles.navRowArrow}>›</Text>
-        </TouchableOpacity>
-
-        {/* Placeholders for features not built yet — kept visible so the
-          layout doesn't need reshaping when each one is added */}
-        <TouchableOpacity
-          style={styles.navRow}
           onPress={() => router.push({ pathname: '/bike/[id]/service', params: { id: bikeId } })}
         >
           <Text style={styles.navRowText}>🛠️  Service</Text>
+          <Text style={styles.navRowArrow}>›</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push({ pathname: '/bike/[id]/maintenance', params: { id: bikeId } })}
+        >
+          <Text style={styles.navRowText}>🔧  Maintenance</Text>
           <Text style={styles.navRowArrow}>›</Text>
         </TouchableOpacity>
 

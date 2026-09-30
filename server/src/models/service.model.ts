@@ -6,6 +6,7 @@ export interface IService {
   odometer: number;
   workshop?: string;
   maintenanceIds: Types.ObjectId[]; // references only — no duplicated maintenance data
+  serviceCharge: number;
   totalCost: number; // sum of linked Maintenance.cost, computed on write
   notes?: string;
 }
@@ -17,6 +18,7 @@ const serviceSchema = new Schema<IService>(
     odometer: { type: Number, required: true },
     workshop: String,
     maintenanceIds: [{ type: Schema.Types.ObjectId, ref: 'Maintenance' }],
+    serviceCharge: { type: Number, default: 0 },
     totalCost: { type: Number, default: 0 },
     notes: String,
   },

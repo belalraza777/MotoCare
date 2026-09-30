@@ -16,6 +16,7 @@ interface CreateServiceInput {
   workshop?: string;
   notes?: string;
   maintenanceItems: MaintenanceItemInput[]; // one visit can cover several items
+  serviceCharge?: number; // optional, can be 0 if no charge for labor
 }
 
 // Creates a Service AND its linked Maintenance records together — the
@@ -35,7 +36,14 @@ export const createService = async (userId: string, bikeId: string, input: Creat
     }))
   );
 
-  const totalCost = maintenanceDocs.reduce((sum, m) => sum + (m.cost ?? 0), 0);
+  const maintenanceIds = maintenanceDocs.map((item) => item._id);
+
+  // Calculate final cost from maintenance items + service charge. 
+  const maintenanceCost = maintenanceDocs.reduce((total, item) => total + (item.cost ?? 0), 0);
+
+  const serviceCharge = input.serviceCharge ?? 0;
+
+  const totalCost = maintenanceCost + serviceCharge;
 
   const service = await Service.create({
     bikeId,
@@ -43,7 +51,8 @@ export const createService = async (userId: string, bikeId: string, input: Creat
     odometer: input.odometer,
     workshop: input.workshop,
     notes: input.notes,
-    maintenanceIds: maintenanceDocs.map((m) => m._id),
+    maintenanceIds,
+    serviceCharge,
     totalCost,
   });
 

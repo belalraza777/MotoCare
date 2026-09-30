@@ -45,7 +45,7 @@ export default function GarageScreen() {
   const firstName = user?.firstName || 'Rider';
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>  
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Good to see you,</Text>
         <Text style={styles.name}>{firstName} 🏍️</Text>
@@ -71,7 +71,7 @@ export default function GarageScreen() {
             <Text style={styles.emptyIcon}>🏍️</Text>
             <Text style={styles.emptyTitle}>Your garage is empty</Text>
             <Text style={styles.emptySubtitle}>
-              Add your first bike to start tracking service, fuel, and documents
+              Add your first bike to start tracking service, maintenance, fuel, and documents
             </Text>
             <View style={styles.emptyButton}>
               <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
@@ -89,7 +89,7 @@ export default function GarageScreen() {
       {/* Only show the FAB once there's at least one bike — when empty,
           the big "Add Your First Bike" button above is the primary CTA,
           so a second floating button would be redundant */}
-      {bikes.length > 0 && <Fab onPress={() => router.push('/bike/add')} bottomOffset={60} />}
+      {bikes.length > 0 && <Fab onPress={() => router.push('/bike/add')} bottomOffset={65} />}
     </SafeAreaView>
   );
 }

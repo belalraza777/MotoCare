@@ -64,11 +64,13 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
   const [odometer, setOdometer] = useState('');
   const [workshop, setWorkshop] = useState('');
   const [notes, setNotes] = useState('');
+  const [serviceCharge, setServiceCharge] = useState('');
 
   // List of maintenance items added for this service visit.
   const [items, setItems] = useState<MaintenanceItemInput[]>([]);
-  const [itemType, setItemType] =useState<MaintenanceType>('ENGINE_OIL');
+  const [itemType, setItemType] = useState<MaintenanceType>('ENGINE_OIL');
   const [itemCost, setItemCost] = useState('');
+  const [itemBrand, setItemBrand] = useState('');
 
   // Add the current maintenance item and reset its cost.
   const addItem = () => {
@@ -76,11 +78,13 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
       ...current,
       {
         type: itemType,
+        brand: itemBrand.trim() || undefined,
         cost: itemCost ? Number(itemCost) : 0,
       },
     ]);
 
     setItemCost('');
+    setItemBrand('');
   };
 
   // Remove an item before saving the service visit.
@@ -95,15 +99,17 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
       odometer: Number(odometer),
       workshop: workshop.trim() || undefined,
       notes: notes.trim() || undefined,
+      serviceCharge: serviceCharge ? Number(serviceCharge) : 0,
       maintenanceItems: items,
     });
   };
 
-  // Total cost of all maintenance items in this visit.
-  const totalCost = items.reduce(
+  // Total cost of all maintenance items and Service Charge in this visit.
+  const maintenancePartCost = items.reduce(
     (total, item) => total + (item.cost ?? 0),
     0
   );
+  const totalCost = maintenancePartCost + (serviceCharge ? Number(serviceCharge) : 0);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -148,6 +154,13 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
               formatLabel={formatMaintenanceType}
             />
 
+            <TextField
+              label="Brand (optional)"
+              placeholder="e.g. Castrol"
+              value={itemBrand}
+              onChangeText={setItemBrand}
+            />
+
             <View style={styles.itemRow}>
               <View style={styles.costField}>
                 <TextField
@@ -170,23 +183,32 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
 
           {items.length > 0 && (
             <View style={styles.itemsList}>
-              <Text style={styles.sectionLabel}>
-                Items in this visit
-              </Text>
+              <Text style={styles.sectionLabel}>Items in this visit</Text>
 
               {items.map((item, index) => (
                 <View key={index} style={styles.itemChip}>
                   <Text style={styles.itemChipText}>
-                    {formatMaintenanceType(item.type)} — ₹{item.cost ?? 0}
+                    {formatMaintenanceType(item.type)}
+                    {item.brand ? ` (${item.brand})` : ''} — ₹{item.cost ?? 0}
                   </Text>
 
-                  <TouchableOpacity
-                    onPress={() => removeItem(index)}
-                  >
+                  <TouchableOpacity onPress={() => removeItem(index)}>
                     <Text style={styles.removeText}>✕</Text>
                   </TouchableOpacity>
                 </View>
               ))}
+
+              <Text style={styles.maintenanceTotal}>
+                Maintenance: ₹{maintenancePartCost}
+              </Text>
+
+              <TextField
+                label="Service Charge (₹)"
+                placeholder="e.g. 300"
+                value={serviceCharge}
+                onChangeText={setServiceCharge}
+                keyboardType="numeric"
+              />
 
               <Text style={styles.totalText}>
                 Total: ₹{totalCost}
@@ -319,6 +341,15 @@ function createStyles(colors: ThemeColors) {
       color: colors.primary,
       textAlign: 'right',
       marginTop: Spacing.xs,
+    },
+    
+    maintenanceTotal: {
+      fontSize: Typography.size.sm,
+      fontWeight: Typography.weight.semibold,
+      color: colors.textSecondary,
+      textAlign: 'right',
+      marginTop: Spacing.xs,
+      marginBottom: Spacing.sm,
     },
 
     notesInput: {
