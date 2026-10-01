@@ -4,6 +4,7 @@ import * as bikeController from '../controllers/bike.controller';
 import maintenanceRoutes from './maintenance.routes';
 import fuelRoutes from './fuel.routes';
 import serviceRoutes from './service.routes';
+import documentRoutes from './document.routes';
 
 
 const router = Router();
@@ -23,6 +24,8 @@ router.use('/:bikeId/maintenance', maintenanceRoutes);
 router.use('/:bikeId/fuel', fuelRoutes);
 //Nested resource: /bikes/:bikeId/service/...
 router.use('/:bikeId/services', serviceRoutes);
+// Nested resource: /bikes/:bikeId/documents/...
+router.use('/:bikeId/documents', documentRoutes);
 
 
 export default router;

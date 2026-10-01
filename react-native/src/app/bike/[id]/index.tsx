@@ -120,9 +120,15 @@ export default function BikeDashboardScreen() {
           <Text style={styles.navRowArrow}>›</Text>
         </TouchableOpacity>
 
-        <View style={[styles.navRow, styles.navRowDisabled]}>
-          <Text style={styles.navRowTextDisabled}>📄  Documents (coming soon)</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push({ pathname: '/bike/[id]/documents', params: { id: bikeId } })}
+        >
+          <Text style={styles.navRowText}>📄  Documents</Text>
+          <Text style={styles.navRowArrow}>›</Text>
+        </TouchableOpacity>
+
+
 
         <View style={styles.actions}>
           <Button
