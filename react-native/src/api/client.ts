@@ -6,6 +6,7 @@ import { createMaintenanceApi } from './maintenance.api';
 import { createFuelApi } from './fuel.api';
 import { createServiceApi } from './service.api';
 import { createDocumentApi } from './document.api';
+import { createDashboardApi } from './dashboard.api';
 
 export function useApiClient() {
   const { getToken } = useAuth();
@@ -33,6 +34,7 @@ export function useApiClient() {
       fuel: createFuelApi(instance),
       services: createServiceApi(instance),
       documents: createDocumentApi(instance),
+      dashboard: createDashboardApi(instance),
     };
   }, [getToken]);
 }

@@ -3,6 +3,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
 import * as bikeService from '../services/bike.service';
+import { getBikeDashboard } from '../services/dashboard.service';
 
 const getUserId = (req: Request): string => {
   return req.localUser!._id.toString();
@@ -47,4 +48,11 @@ export const deleteBike = asyncHandler(async (req: Request, res: Response) => {
   const bikeId = getBikeIdParam(req);
   await bikeService.deleteBike(userId, bikeId);
   res.status(200).json(new ApiResponse(200, null, 'Bike deleted'));
+});
+
+export const getDashboard = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getUserId(req);
+  const bikeId = getBikeIdParam(req);
+  const dashboard = await getBikeDashboard(userId, bikeId);
+  res.status(200).json(new ApiResponse(200, dashboard));
 });

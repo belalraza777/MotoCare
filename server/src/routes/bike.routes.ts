@@ -26,6 +26,8 @@ router.use('/:bikeId/fuel', fuelRoutes);
 router.use('/:bikeId/services', serviceRoutes);
 // Nested resource: /bikes/:bikeId/documents/...
 router.use('/:bikeId/documents', documentRoutes);
+// Nested resource: /bikes/:bikeId/dashboard/...
+router.get('/:id/dashboard', bikeController.getDashboard);
 
 
 export default router;

@@ -8,6 +8,7 @@ export enum DocumentType {
 }
 
 export interface IDocument {
+  _id?: Types.ObjectId;
   bikeId: Types.ObjectId;
   type: DocumentType;
   title?: string; // required for OTHER — lets user label what the document is
