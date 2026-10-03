@@ -1,19 +1,18 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { ChevronRight, Fuel } from 'lucide-react-native';
+import { SvgUri } from 'react-native-svg';
 import { Bike } from '../../types/bike.types';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+
+const bikeIconUri = Image.resolveAssetSource(
+  require('../../../assets/bikeIcon.svg')
+).uri;
 
 interface BikeCardProps {
   item: Bike;
   onPress: () => void;
 }
-
-const FUEL_ICON: Record<Bike['fuelType'], string> = {
-  PETROL: '⛽',
-  ELECTRIC: '🔌',
-  DIESEL: '⛽',
-  HYBRID: '🔋',
-};
 
 export function BikeCard({ item, onPress }: BikeCardProps) {
   const { colors } = useTheme();
@@ -23,7 +22,7 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       {/* Icon tile stands in for a bike photo until image upload is built */}
       <View style={styles.iconTile}>
-        <Text style={styles.iconText}>🏍️</Text>
+        <SvgUri uri={bikeIconUri} width={34} height={34} fill={colors.primary} />
       </View>
 
       <View style={styles.info}>
@@ -32,11 +31,12 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
         <View style={styles.meta}>
           <Text style={styles.metaText}>{item.currentKm.toLocaleString()} km</Text>
           <Text style={styles.metaDot}>•</Text>
-          <Text style={styles.metaText}>{FUEL_ICON[item.fuelType]} {item.fuelType}</Text>
+          <Fuel color={colors.textMuted} size={14} strokeWidth={2} />
+          <Text style={styles.metaText}>{item.fuelType}</Text>
         </View>
       </View>
 
-      <Text style={styles.chevron}>›</Text>
+      <ChevronRight color={colors.textMuted} size={18} strokeWidth={2.2} />
     </TouchableOpacity>
   );
 }
@@ -62,8 +62,6 @@ function createStyles(colors: ThemeColors) {
       alignItems: 'center',
       marginRight: Spacing.md,
     },
-    iconText: { fontSize: 26 },
-
     info: { flex: 1 },
     name: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text },
     variant: { fontSize: Typography.size.xs + 1, color: colors.textSecondary, marginTop: 1 },

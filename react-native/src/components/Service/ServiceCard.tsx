@@ -13,7 +13,7 @@ export function ServiceCard({ item, onPress }: ServiceCardProps) {
   const styles = createStyles(colors);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.row}>
         <Text style={styles.workshop}>{item.workshop || 'Service Visit'}</Text>
         <Text style={styles.cost}>₹{item.totalCost}</Text>

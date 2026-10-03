@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Fuel as FuelIcon } from 'lucide-react-native';
 import { Fuel } from '../../types/fuel.types';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
@@ -16,9 +17,12 @@ export function FuelCard({ item, onPress }: FuelCardProps) {
   const perLitre = (item.totalAmount / item.litres).toFixed(2);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.row}>
-        <Text style={styles.litres}>⛽ {item.litres} L</Text>
+        <View style={styles.litresRow}>
+          <FuelIcon color={colors.primary} size={18} strokeWidth={2.2} />
+          <Text style={styles.litres}>{item.litres} L</Text>
+        </View>
         <Text style={styles.amount}>₹{item.totalAmount}</Text>
       </View>
       <View style={styles.meta}>
@@ -41,6 +45,7 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
     },
     row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    litresRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
     litres: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text },
     amount: { fontSize: Typography.size.md, fontWeight: Typography.weight.semibold, color: colors.primary },
     meta: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm },

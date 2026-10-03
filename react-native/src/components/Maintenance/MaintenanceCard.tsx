@@ -15,7 +15,7 @@ export function MaintenanceCard({ item, onPress }: MaintenanceCardProps) {
   const styles = createStyles(colors);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <Text style={styles.type}>{item.type.replace(/_/g, ' ')}</Text>
         <Text style={styles.cost}>₹{item.cost}</Text>

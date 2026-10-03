@@ -34,6 +34,7 @@ export function ChipSelect<T extends string>({
               key={option}
               style={[styles.chip, active && styles.chipActive]}
               onPress={() => onChange(option)}
+              activeOpacity={0.7}
             >
               <Text style={[styles.chipText, active && styles.chipTextActive]}>
                 {formatLabel(option)}

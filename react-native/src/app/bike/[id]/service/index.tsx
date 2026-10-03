@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, FlatList,Text } from 'react-native'
+import { FlatList, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApiClient } from '../../../../api/client';
@@ -8,7 +8,7 @@ import { ServiceCard } from '../../../../components/Service/ServiceCard';
 import { LoadingView, ErrorView, EmptyView } from '../../../../components/ui/StateViews';
 import { Fab } from '../../../../components/ui/Fab';
 import { useTheme } from '../../../../context/ThemeContext';
-import { Spacing } from '../../../../constants/theme';
+import { Spacing, Typography, ThemeColors } from '../../../../constants/theme';
 
 
 export default function ServiceListScreen() {
@@ -16,6 +16,7 @@ export default function ServiceListScreen() {
   const api = useApiClient();
   const router = useRouter();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [records, setRecords] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,14 +41,14 @@ export default function ServiceListScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
 
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: Spacing.md, paddingHorizontal: Spacing.lg }}>
+      <Text style={styles.heading}>
         Service Records
       </Text>
 
       <FlatList
         data={records}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={{ padding: Spacing.lg, flexGrow: 1 }}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={<EmptyView title="No service visits logged yet" />}
         renderItem={({ item }) => (
           <ServiceCard
@@ -61,4 +62,11 @@ export default function ServiceListScreen() {
       <Fab onPress={() => router.push({ pathname: '/bike/[id]/service/add', params: { id: bikeId } })} />
     </SafeAreaView>
   );
+}
+
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  heading: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.sm },
+  listContent: { padding: Spacing.lg, paddingTop: Spacing.sm, flexGrow: 1 },
+  });
 }

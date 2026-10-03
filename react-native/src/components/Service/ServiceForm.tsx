@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { X } from 'lucide-react-native';
 
 import { Button } from '../ui/Button';
 import { ChipSelect } from '../ui/ChipSelect';
@@ -175,6 +176,7 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
               <TouchableOpacity
                 style={styles.addItemButton}
                 onPress={addItem}
+                activeOpacity={0.7}
               >
                 <Text style={styles.addItemButtonText}>Add</Text>
               </TouchableOpacity>
@@ -192,8 +194,8 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
                     {item.brand ? ` (${item.brand})` : ''} — ₹{item.cost ?? 0}
                   </Text>
 
-                  <TouchableOpacity onPress={() => removeItem(index)}>
-                    <Text style={styles.removeText}>✕</Text>
+                  <TouchableOpacity onPress={() => removeItem(index)} activeOpacity={0.7}>
+                    <X color={colors.error} size={18} strokeWidth={2.2} />
                   </TouchableOpacity>
                 </View>
               ))}

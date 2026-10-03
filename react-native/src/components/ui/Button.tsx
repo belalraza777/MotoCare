@@ -24,9 +24,10 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled 
       style={[styles.base, styles[variant], isDisabled && styles.disabled]}
       onPress={onPress}
       disabled={isDisabled}
+      activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? colors.primary : '#fff'} />
+        <ActivityIndicator color={variant === 'outline' ? colors.primary : colors.surface} />
       ) : (
         <Text style={[styles.label, variant === 'outline' && { color: colors.primary }]}>
           {label}
@@ -43,6 +44,6 @@ function createStyles(colors: ThemeColors) {
     danger: { backgroundColor: colors.error },
     outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary },
     disabled: { opacity: 0.6 },
-    label: { color: '#fff', fontWeight: Typography.weight.semibold, fontSize: Typography.size.md },
+    label: { color: colors.surface, fontWeight: Typography.weight.semibold, fontSize: Typography.size.md },
   });
 }

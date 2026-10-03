@@ -2,6 +2,9 @@ import { Bike } from '../models/bike.model';
 import { ApiError } from '../utils/ApiError';
 import { Types } from 'mongoose';
 import { Maintenance } from '../models/maintenance.model';
+import { Service } from '../models/service.model';
+import { Fuel } from '../models/fuel.model';
+import { Document } from '../models/document.model';
 
 //Create a new bike for a user
 export const createBike = async (userId: string, data: any) => {
@@ -43,8 +46,12 @@ export const updateBike = async (userId: string, bikeId: string, updates: any) =
 
 // Delete a specific bike for a user by bikeId
 export const deleteBike = async (userId: string, bikeId: string) => {
-  const bike = await getBikeById(userId, bikeId);
-  await Maintenance.deleteMany({ bikeId: bike._id }); // delete all maintenance records for this bike
+  const bike = await getBikeById(userId, bikeId); 
+  //All Bike releted record delete
+  await Service.deleteMany({ bikeId: bike._id });
+  await Maintenance.deleteMany({ bikeId: bike._id });
+  await Fuel.deleteMany({ bikeId: bike._id });
+  await Document.deleteMany({ bikeId: bike._id });
   await bike.deleteOne();
   return bike;
 };

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, FlatList, Text } from 'react-native';
+import { FlatList, Text, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useApiClient } from '../../../../api/client';
 import { Fuel } from '../../../../types/fuel.types';
@@ -7,7 +7,7 @@ import { FuelCard } from '../../../../components/Fuel/FuelCard';
 import { LoadingView, ErrorView, EmptyView } from '../../../../components/ui/StateViews';
 import { Fab } from '../../../../components/ui/Fab';
 import { useTheme } from '../../../../context/ThemeContext';
-import { Spacing } from '../../../../constants/theme';
+import { Spacing, Typography, ThemeColors } from '../../../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FuelListScreen() {
@@ -15,6 +15,7 @@ export default function FuelListScreen() {
   const api = useApiClient();
   const router = useRouter();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [records, setRecords] = useState<Fuel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,13 +39,13 @@ export default function FuelListScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: Spacing.md, paddingHorizontal: Spacing.lg }}>
+      <Text style={styles.heading}>
         Fuel Records
       </Text>
       <FlatList
         data={records}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={{ padding: Spacing.lg, flexGrow: 1 }}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={<EmptyView title="No fuel entries yet" />}
         renderItem={({ item }) => (
           <FuelCard
@@ -61,4 +62,11 @@ export default function FuelListScreen() {
       <Fab onPress={() => router.push({ pathname: '/bike/[id]/fuel/add', params: { id: bikeId } })} />
     </SafeAreaView>
   );
+}
+
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  heading: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.sm },
+  listContent: { padding: Spacing.lg, paddingTop: Spacing.sm, flexGrow: 1 },
+  });
 }

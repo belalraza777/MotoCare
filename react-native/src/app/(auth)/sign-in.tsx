@@ -139,7 +139,7 @@ export default function SignInScreen() {
       </TouchableOpacity>
 
       {!showEmailForm ? (
-        <TouchableOpacity onPress={() => setShowEmailForm(true)} style={styles.toggleLink}>
+        <TouchableOpacity onPress={() => setShowEmailForm(true)} style={styles.toggleLink} activeOpacity={0.7}>
           <Text style={styles.toggleLinkText}>Sign in with email instead</Text>
         </TouchableOpacity>
       ) : (
@@ -172,6 +172,7 @@ export default function SignInScreen() {
             style={[styles.button, (loading || !isLoaded) && styles.disabled]}
             onPress={onEmailSignIn}
             disabled={loading || !isLoaded}
+            activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>
               {!isLoaded ? 'Loading...' : loading ? 'Signing in...' : 'Sign In'}

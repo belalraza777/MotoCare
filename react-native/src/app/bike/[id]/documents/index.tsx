@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, View ,Text} from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApiClient } from '../../../../api/client';
@@ -8,13 +8,14 @@ import { DocumentCard } from '../../../../components/Document/DocumentCard';
 import { LoadingView, ErrorView } from '../../../../components/ui/StateViews';
 import { Button } from '../../../../components/ui/Button';
 import { useTheme } from '../../../../context/ThemeContext';
-import { Spacing } from '../../../../constants/theme';
+import { Spacing, Typography, ThemeColors } from '../../../../constants/theme';
 
 export default function DocumentListScreen() {
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
   const api = useApiClient();
   const router = useRouter();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [docs, setDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,10 +55,10 @@ export default function DocumentListScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: Spacing.md, paddingHorizontal: Spacing.lg }}>
+      <Text style={styles.heading}>
         Documents Records
       </Text>
-      <ScrollView contentContainerStyle={{ padding: Spacing.lg }}>
+      <ScrollView contentContainerStyle={styles.content}>
         {insurance ? (
           <DocumentCard item={insurance} onPress={() => goToEdit(insurance._id)} />
         ) : (
@@ -92,4 +93,11 @@ function Slot({ label, onPress }: { label: string; onPress: () => void }) {
       <Button label={label} onPress={onPress} variant="outline" />
     </View>
   );
+}
+
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  heading: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.sm },
+  content: { padding: Spacing.lg, paddingTop: Spacing.sm },
+  });
 }

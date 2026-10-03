@@ -87,6 +87,7 @@ export default function BikeDashboardScreen() {
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => router.push({ pathname: '/bike/[id]/edit', params: { id: bikeId } })}
+            activeOpacity={0.7}
           >
             <Pencil size={14} color={colors.primary} strokeWidth={2.4} />
             <Text style={styles.editLink}>Edit</Text>
@@ -226,7 +227,7 @@ function createStyles(colors: ThemeColors) {
       padding: Spacing.lg,
       marginBottom: Spacing.lg,
       borderWidth: 1,
-      borderColor: colors.primary + '22',
+      borderColor: colors.primarySoft,
     },
     serviceBannerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     serviceBannerLabel: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: colors.primary, letterSpacing: 0.3 },

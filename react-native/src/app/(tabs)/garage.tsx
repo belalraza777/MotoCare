@@ -1,5 +1,13 @@
 import { useCallback, useState } from 'react';
-import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Image,
+} from 'react-native';
+import { SvgUri } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useApiClient } from '../../api/client';
 import { useUser } from '@clerk/clerk-expo';
@@ -9,9 +17,17 @@ import { LoadingView, ErrorView } from '../../components/ui/StateViews';
 import { Fab } from '../../components/ui/Fab';
 import { Button } from '../../components/ui/Button';
 import { useTheme } from '../../context/ThemeContext';
-import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+import {
+  Radius,
+  Spacing,
+  Typography,
+  ThemeColors,
+} from '../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const bikeIconUri = Image.resolveAssetSource(
+  require('../../../assets/bikeIcon.svg')
+).uri;
 
 export default function GarageScreen() {
   const api = useApiClient();
@@ -27,6 +43,7 @@ export default function GarageScreen() {
 
   const load = useCallback(async () => {
     setError(null);
+
     try {
       setBikes(await api.bikes.getAll());
     } catch (err: any) {
@@ -37,7 +54,11 @@ export default function GarageScreen() {
     }
   }, [api]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   if (loading) return <LoadingView />;
   if (error) return <ErrorView message={error} onRetry={load} />;
@@ -46,14 +67,10 @@ export default function GarageScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Good to see you,</Text>
-        <Text style={styles.name}>{firstName} 🏍️</Text>
-      </View>
-
       <FlatList
         data={bikes}
         keyExtractor={(item) => item._id}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.listContent,
           bikes.length === 0 && styles.listContentEmpty,
@@ -61,61 +78,223 @@ export default function GarageScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); load(); }}
+            onRefresh={() => {
+              setRefreshing(true);
+              load();
+            }}
             tintColor={colors.primary}
             colors={[colors.primary]}
           />
         }
+        ListHeaderComponent={
+          bikes.length > 0 ? (
+            <View style={styles.header}>
+              <View style={styles.greetingRow}>
+                <View style={styles.headerText}>
+                  <Text style={styles.greeting}>Good to see you,</Text>
+                  <Text style={styles.name}>{firstName}</Text>
+                </View>
+
+                <View style={styles.headerIcon}>
+                  <SvgUri uri={bikeIconUri} width={28} height={28} fill={colors.primary} />
+                </View>
+              </View>
+
+              <View style={styles.sectionHeader}>
+                <View>
+                  <Text style={styles.sectionTitle}>Your Garage</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    {bikes.length === 1
+                      ? '1 bike in your garage'
+                      : `${bikes.length} bikes in your garage`}
+                  </Text>
+                </View>
+
+                <View style={styles.countBadge}>
+                  <Text style={styles.countText}>{bikes.length}</Text>
+                </View>
+              </View>
+            </View>
+          ) : null
+        }
+        renderItem={({ item }) => (
+          <View style={styles.cardWrapper}>
+            <BikeCard
+              item={item}
+              onPress={() =>
+                router.push({
+                  pathname: '/bike/[id]',
+                  params: { id: item._id },
+                })
+              }
+            />
+          </View>
+        )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🏍️</Text>
+            <View style={styles.emptyIcon}>
+              <SvgUri uri={bikeIconUri} width={44} height={44} fill={colors.primary} />
+            </View>
+
             <Text style={styles.emptyTitle}>Your garage is empty</Text>
+
             <Text style={styles.emptySubtitle}>
-              Add your first bike to start tracking service, maintenance, fuel, and documents
+              Add your first bike to keep track of its service, maintenance,
+              fuel, and documents.
             </Text>
+
             <View style={styles.emptyButton}>
-              <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
+              <Button
+                label="Add Your First Bike"
+                onPress={() => router.push('/bike/add')}
+              />
             </View>
           </View>
         }
-        renderItem={({ item }) => (
-          <BikeCard
-            item={item}
-            onPress={() => router.push({ pathname: '/bike/[id]', params: { id: item._id } })}
-          />
-        )}
       />
 
-      {/* Only show the FAB once there's at least one bike — when empty,
-          the big "Add Your First Bike" button above is the primary CTA,
-          so a second floating button would be redundant */}
-      {bikes.length > 0 && <Fab onPress={() => router.push('/bike/add')} bottomOffset={65} />}
+      {bikes.length > 0 && (
+        <Fab
+          onPress={() => router.push('/bike/add')}
+          bottomOffset={65}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-    header: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
-    greeting: { fontSize: Typography.size.sm, color: colors.textSecondary },
-    name: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, marginTop: 2 },
+    listContent: {
+      paddingHorizontal: Spacing.lg,
+      paddingTop: Spacing.lg,
+      paddingBottom: 110,
+    },
 
-    listContent: { padding: Spacing.lg, paddingTop: Spacing.sm, paddingBottom: 100 }, // clears the FAB
-    listContentEmpty: { flexGrow: 1 },
+    listContentEmpty: {
+      flexGrow: 1,
+    },
 
-    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-    emptyIcon: { fontSize: 48, marginBottom: Spacing.md },
-    emptyTitle: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
+    header: {
+      marginBottom: Spacing.lg,
+    },
+
+    greetingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: Spacing.xl,
+    },
+
+    headerText: {
+      flex: 1,
+    },
+
+    greeting: {
+      fontSize: Typography.size.sm,
+      color: colors.textSecondary,
+    },
+
+    name: {
+      fontSize: Typography.size.xxl,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+      marginTop: Spacing.xs,
+    },
+
+    headerIcon: {
+      width: 46,
+      height: 46,
+      borderRadius: Radius.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary + '12',
+      borderWidth: 1,
+      borderColor: colors.primary + '20',
+    },
+
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+
+    sectionTitle: {
+      fontSize: Typography.size.lg,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+    },
+
+    sectionSubtitle: {
+      fontSize: Typography.size.sm,
+      color: colors.textSecondary,
+      marginTop: 3,
+    },
+
+    countBadge: {
+      minWidth: 34,
+      height: 34,
+      paddingHorizontal: Spacing.sm,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    countText: {
+      fontSize: Typography.size.sm,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+    },
+
+    cardWrapper: {
+      marginBottom: Spacing.md,
+    },
+
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: Spacing.xl,
+    },
+
+    emptyIcon: {
+      width: 76,
+      height: 76,
+      borderRadius: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary + '12',
+      borderWidth: 1,
+      borderColor: colors.primary + '20',
+      marginBottom: Spacing.lg,
+    },
+
+    emptyTitle: {
+      fontSize: Typography.size.lg,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+      textAlign: 'center',
+    },
+
     emptySubtitle: {
       fontSize: Typography.size.sm,
       color: colors.textMuted,
       textAlign: 'center',
-      marginTop: Spacing.xs,
-      marginBottom: Spacing.xl,
       lineHeight: 20,
+      marginTop: Spacing.sm,
+      marginBottom: Spacing.xl,
     },
-    emptyButton: { width: '100%' },
+
+    emptyButton: {
+      width: '100%',
+    },
   });
 }

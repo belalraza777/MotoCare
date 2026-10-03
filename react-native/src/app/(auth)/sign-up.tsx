@@ -86,6 +86,7 @@ export default function SignUpScreen() {
           style={[styles.button, (loading || !isLoaded) && styles.disabled]}
           onPress={onVerify}
           disabled={loading || !isLoaded}
+          activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>{loading ? 'Verifying...' : 'Verify'}</Text>
         </TouchableOpacity>
@@ -129,6 +130,7 @@ export default function SignUpScreen() {
         style={[styles.button, (loading || !isLoaded) && styles.disabled]}
         onPress={onSignUp}
         disabled={loading || !isLoaded}
+        activeOpacity={0.7}
       >
         <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Sign Up'}</Text>
       </TouchableOpacity>

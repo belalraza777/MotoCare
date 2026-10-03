@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Switch } from 'react-native';
+import { Moon, Sun } from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useApiClient } from '../../api/client';
@@ -14,7 +15,7 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { user } = useUser();
   const api = useApiClient();
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, toggleTheme } = useTheme();
   const styles = createStyles(colors);
 
   const [bikeCount, setBikeCount] = useState<number | null>(null);
@@ -48,8 +49,16 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>Bikes in Garage</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statValue}>{isDark ? '🌙' : '☀️'}</Text>
+          {isDark ? <Moon color={colors.primary} size={24} strokeWidth={2.2} /> : <Sun color={colors.primary} size={24} strokeWidth={2.2} />}
           <Text style={styles.statLabel}>{isDark ? 'Dark Mode' : 'Light Mode'}</Text>
+          <Switch
+            value={isDark}
+            onValueChange={toggleTheme}
+            trackColor={{ false: colors.border, true: colors.primarySoft }}
+            thumbColor={isDark ? colors.primary : colors.surface}
+            ios_backgroundColor={colors.border}
+            style={styles.themeSwitch}
+          />
         </View>
       </View>
 
@@ -88,6 +97,7 @@ function createStyles(colors: ThemeColors) {
     },
     statValue: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text },
     statLabel: { fontSize: Typography.size.xs + 1, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
+    themeSwitch: { marginTop: Spacing.xs },
 
     signOutWrap: { marginTop: 'auto', marginBottom: Spacing.lg },
   });

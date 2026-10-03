@@ -15,7 +15,7 @@ export default function Index() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }),
     ]).start();
   }, []);
