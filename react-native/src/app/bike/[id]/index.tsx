@@ -40,21 +40,19 @@ export default function BikeDashboardScreen() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Keep the latest api instance in a ref so `load` doesn't need `api` as a
-  // dependency — avoids re-creating `load` (and re-triggering useFocusEffect)
-  // every time useApiClient() returns a new object reference.
-  const apiRef = useRef(api);
-  apiRef.current = api;
 
   // reminders should only be scheduled once per real data change, not on
   // every focus — track the last bikeId we scheduled for
   const lastScheduledFor = useRef<string | null>(null);
 
+  // Load dashboard data
   const load = useCallback(async (isRefresh = false) => {
     setError(null);
+
     if (isRefresh) setRefreshing(true);
+
     try {
-      const data = await apiRef.current.dashboard.get(bikeId);
+      const data = await api.dashboard.get(bikeId);
       setDashboard(data);
 
       if (lastScheduledFor.current !== bikeId) {
@@ -67,7 +65,7 @@ export default function BikeDashboardScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [bikeId]); // only bikeId — stable across re-renders unless the actual bike changes
+  }, [api, bikeId]); //this dependency array ensures that the load function is recreated whenever the api or bikeId changes, which is important for keeping the function up-to-date with the latest values.
 
   useFocusEffect(
     useCallback(() => {
@@ -82,28 +80,38 @@ export default function BikeDashboardScreen() {
 
   // Delete bike handler
   const handleDelete = () => {
-    Alert.alert('Delete Bike', 'This will permanently delete this bike and all its records.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          setDeleting(true);
-          try {
-            await apiRef.current.bikes.delete(bikeId);
-            router.replace('/(tabs)/garage');
-          } catch (err: any) {
-            Alert.alert('Error', err.response?.data?.message ?? 'Failed to delete bike');
-            setDeleting(false);
-          }
+    Alert.alert(
+      'Delete Bike',
+      'This will permanently delete this bike and all its records.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+
+            try {
+              await api.bikes.delete(bikeId);
+              router.replace('/(tabs)/garage');
+            } catch (err: any) {
+              Alert.alert(
+                'Error',
+                err.response?.data?.message ?? 'Failed to delete bike'
+              );
+              setDeleting(false);
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
+  // Render loading, error, or dashboard view
   if (loading) return <LoadingView />;
   if (error || !dashboard) return <ErrorView message={error ?? 'Not found'} onRetry={() => load()} />;
 
+  // Destructure dashboard data for easier access
   const { bike, serviceDue, expenses, documents } = dashboard;
 
 

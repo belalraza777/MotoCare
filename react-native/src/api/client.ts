@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-expo';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { createBikeApi } from './bike.api';
 import { createMaintenanceApi } from './maintenance.api';
 import { createFuelApi } from './fuel.api';
@@ -8,26 +8,34 @@ import { createServiceApi } from './service.api';
 import { createDocumentApi } from './document.api';
 import { createDashboardApi } from './dashboard.api';
 
+const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+// This hook provides an API client with methods for interacting with various endpoints.
 export function useApiClient() {
   const { getToken } = useAuth();
 
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api'; // Fallback to localhost if the environment variable is not set
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
 
   return useMemo(() => {
-    // Create an Axios instance with the base URL and any other configuration you need
     const instance = axios.create({
       baseURL: baseUrl,
       timeout: 10000,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     instance.interceptors.request.use(async (config) => {
-      const token = await getToken();
-      if (token) config.headers.Authorization = `Bearer ${token}`;
+      const token = await getTokenRef.current();
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+
       return config;
     });
 
-    // Add more API modules here as needed
     return {
       bikes: createBikeApi(instance),
       maintenance: createMaintenanceApi(instance),
@@ -36,5 +44,5 @@ export function useApiClient() {
       documents: createDocumentApi(instance),
       dashboard: createDashboardApi(instance),
     };
-  }, [getToken]);
+  }, [baseUrl]);
 }
