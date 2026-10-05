@@ -65,6 +65,7 @@ export default function ProfileScreen() {
       <View style={styles.signOutWrap}>
         <Button label="Sign Out" onPress={() => signOut()} variant="danger" />
       </View>
+
     </SafeAreaView>
   );
 }

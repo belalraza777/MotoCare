@@ -5,6 +5,7 @@ import { Fuel } from '../models/fuel.model';
 import { Document, IDocument } from '../models/document.model';
 import { getBikeById } from './bike.service';
 import { getDocumentStatus } from './document.service';
+import { Types } from 'mongoose';
 
 //Due soon threshold for service in kilometers
 const DUE_SOON_THRESHOLD_KM = 300;
@@ -51,13 +52,18 @@ const extractSum = (facetResult: any[], key: 'total' | 'thisMonth') => facetResu
 
 // Computes the total and this-month expenses for fuel, service, and maintenance
 async function getExpenseSummary(bikeId: string) {
-  const monthStart = startOfMonth();
+   const monthStart= startOfMonth();
+  const bikeObjectId = new Types.ObjectId(bikeId);
 
   const [fuel, service, maintenance] = await Promise.all([
-    sumWithMonthlyFacet(Fuel, { bikeId }, 'totalAmount', monthStart),
-    sumWithMonthlyFacet(Service, { bikeId }, 'totalCost', monthStart),
-    // only standalone Maintenance (no serviceId) — linked ones are already in Service.totalCost
-    sumWithMonthlyFacet(Maintenance, { bikeId, serviceId: null }, 'cost', monthStart),
+    sumWithMonthlyFacet(Fuel, { bikeId: bikeObjectId }, 'totalAmount', monthStart),
+    sumWithMonthlyFacet(Service, { bikeId: bikeObjectId }, 'totalCost', monthStart),
+    sumWithMonthlyFacet(
+      Maintenance,
+      { bikeId: bikeObjectId, serviceId: null },
+      'cost',
+      monthStart
+    ),
   ]);
 
   return {

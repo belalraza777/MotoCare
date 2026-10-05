@@ -7,12 +7,17 @@ import apiRoutes from "./routes/index";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { rateLimitMiddleware } from "./middlewares/rateLimit.middleware";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors()); // Enable CORS for all routes
-app.use(rateLimitMiddleware); //Rate Limit
+app.use(helmet()); // Enable Helmet for security headers
+app.use(morgan("dev")); // Enable Morgan for logging
+// app.use(rateLimitMiddleware); //Rate Limit
 app.use(clerkMiddleware()); // Clerk middleware to handle authentication and user sessions
 
 // Health check endpoint

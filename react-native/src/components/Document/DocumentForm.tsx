@@ -8,10 +8,12 @@ import { useTheme } from '../../context/ThemeContext';
 import { Spacing, Typography, ThemeColors } from '../../constants/theme';
 
 interface DocumentFormProps {
-  type: DocumentType; // fixed per screen, set by whichever "Add" slot was tapped
+  type: DocumentType;
   initialValue?: Document;
   onSubmit: (data: SaveDocumentInput) => Promise<void>;
+  onDelete?: () => void;
   loading: boolean;
+  deleting?: boolean;
 }
 
 const TITLES: Record<DocumentType, string> = {
@@ -21,7 +23,12 @@ const TITLES: Record<DocumentType, string> = {
   OTHER: 'Document',
 };
 
-export function DocumentForm({ type, initialValue, onSubmit, loading }: DocumentFormProps) {
+export function DocumentForm({ type,
+  initialValue,
+  onSubmit,
+  onDelete,
+  loading,
+  deleting = false, }: DocumentFormProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -84,9 +91,19 @@ export function DocumentForm({ type, initialValue, onSubmit, loading }: Document
           )}
 
           <TextField label="Issue Date (optional)" placeholder="YYYY-MM-DD" value={issueDate} onChangeText={setIssueDate} />
-          <TextField label="Expiry Date" placeholder="YYYY-MM-DD" value={expiryDate} onChangeText={setExpiryDate}  />
+          <TextField label="Expiry Date" placeholder="YYYY-MM-DD" value={expiryDate} onChangeText={setExpiryDate} />
 
           <Button label={loading ? 'Saving...' : 'Save'} onPress={handleSubmit} loading={loading} disabled={!canSubmit} />
+          
+          {initialValue && onDelete && (
+            <Button
+              label="Delete Document"
+              onPress={onDelete}
+              variant="danger"
+              loading={deleting}
+              disabled={loading}
+            />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

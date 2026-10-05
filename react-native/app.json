@@ -7,27 +7,31 @@
     "icon": "./assets/motocarelogo.png",
     "scheme": "motocare",
     "userInterfaceStyle": "automatic",
+
     "ios": {
       "icon": "./assets/motocarelogo.png",
       "bundleIdentifier": "com.belalllll.motocare"
     },
+
     "android": {
       "package": "com.belalllll.motocare",
       "adaptiveIcon": {
-        "backgroundColor": "#208AEF",
+        "backgroundColor": "#A9652B",
         "foregroundImage": "./assets/motocarelogo.png"
       }
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/motocarelogo.png"
     },
+
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#A9652B",
           "image": "./assets/motocarelogo.png",
           "imageWidth": 150
         }
@@ -36,9 +40,17 @@
       "expo-web-browser",
       "expo-status-bar"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7842f1f0-5e37-4be7-9dba-6be51c580ba0"
+      }
     }
   }
 }

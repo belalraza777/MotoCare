@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -9,7 +9,6 @@ import {
   Fuel,
   FileText,
   ChevronRight,
-  Trash2,
 } from 'lucide-react-native';
 import { useApiClient } from '../../../api/client';
 import { BikeDashboard } from '../../../types/dashboard.types';
@@ -19,7 +18,14 @@ import { ServiceStatusBadge } from '../../../components/ui/ServiceStatusBadge';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { useTheme } from '../../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../../constants/theme';
+import { scheduleBikeReminders } from '../../../lib/reminderScheduler';
 
+const formatDate = (date: string) =>
+  new Date(date).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 
 export default function BikeDashboardScreen() {
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
@@ -30,25 +36,51 @@ export default function BikeDashboardScreen() {
 
   const [dashboard, setDashboard] = useState<BikeDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load the dashboard data for the bike
-  const load = useCallback(async () => {
+  // Keep the latest api instance in a ref so `load` doesn't need `api` as a
+  // dependency — avoids re-creating `load` (and re-triggering useFocusEffect)
+  // every time useApiClient() returns a new object reference.
+  const apiRef = useRef(api);
+  apiRef.current = api;
+
+  // reminders should only be scheduled once per real data change, not on
+  // every focus — track the last bikeId we scheduled for
+  const lastScheduledFor = useRef<string | null>(null);
+
+  const load = useCallback(async (isRefresh = false) => {
     setError(null);
+    if (isRefresh) setRefreshing(true);
     try {
-      setDashboard(await api.dashboard.get(bikeId));
+      const data = await apiRef.current.dashboard.get(bikeId);
+      setDashboard(data);
+
+      if (lastScheduledFor.current !== bikeId) {
+        scheduleBikeReminders(data);
+        lastScheduledFor.current = bikeId;
+      }
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to load dashboard');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [api, bikeId]);
+  }, [bikeId]); // only bikeId — stable across re-renders unless the actual bike changes
 
-  // refetch on focus — picks up changes made in Fuel/Service/Maintenance/Documents screens
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
-  // Handle bike deletion with confirmation alert
+  // Pull-to-refresh handler
+  const onPullToRefresh = useCallback(() => {
+    load(true);
+  }, [load]);
+
+  // Delete bike handler
   const handleDelete = () => {
     Alert.alert('Delete Bike', 'This will permanently delete this bike and all its records.', [
       { text: 'Cancel', style: 'cancel' },
@@ -58,7 +90,7 @@ export default function BikeDashboardScreen() {
         onPress: async () => {
           setDeleting(true);
           try {
-            await api.bikes.delete(bikeId);
+            await apiRef.current.bikes.delete(bikeId);
             router.replace('/(tabs)/garage');
           } catch (err: any) {
             Alert.alert('Error', err.response?.data?.message ?? 'Failed to delete bike');
@@ -69,15 +101,25 @@ export default function BikeDashboardScreen() {
     ]);
   };
 
-
   if (loading) return <LoadingView />;
-  if (error || !dashboard) return <ErrorView message={error ?? 'Not found'} onRetry={load} />;
+  if (error || !dashboard) return <ErrorView message={error ?? 'Not found'} onRetry={() => load()} />;
 
   const { bike, serviceDue, expenses, documents } = dashboard;
 
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onPullToRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.bikeName}>{bike.brand} {bike.model}</Text>
@@ -94,19 +136,18 @@ export default function BikeDashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Next service banner — now backed by real Service history, not a flat estimate */}
         <View style={styles.serviceBanner}>
           <View style={styles.serviceBannerTop}>
             <Text style={styles.serviceBannerLabel}>Next Service</Text>
             <ServiceStatusBadge status={serviceDue.status} />
           </View>
-          <Text style={styles.serviceBannerValue}>
-            Due at {serviceDue.nextDueKm.toLocaleString()} km
-          </Text>
-          <Text style={styles.serviceBannerSub}>
+          <Text style={styles.serviceRemaining}>
             {serviceDue.status === 'overdue'
               ? `${(bike.currentKm - serviceDue.nextDueKm).toLocaleString()} km overdue`
               : `${serviceDue.remainingKm.toLocaleString()} km remaining`}
+          </Text>
+          <Text style={styles.serviceDueKm}>
+            Due at {serviceDue.nextDueKm.toLocaleString()} km
           </Text>
         </View>
 
@@ -125,16 +166,22 @@ export default function BikeDashboardScreen() {
           </View>
         </View>
 
-        {/* Document status summary — only shown if any documents exist */}
         {documents.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Documents</Text>
             <View style={styles.docsCard}>
               {documents.map((doc) => (
                 <View key={doc._id} style={styles.docRow}>
-                  <Text style={styles.docLabel}>
-                    {doc.type === 'OTHER' ? doc.title : doc.type}
-                  </Text>
+                  <View style={styles.documentInfo}>
+                    <Text style={styles.docLabel}>
+                      {doc.type === 'OTHER' ? doc.title : doc.type}
+                    </Text>
+                    <Text style={styles.documentExpiry}>
+                      {doc.status === 'expired'
+                        ? `Expired ${formatDate(doc.expiryDate)}`
+                        : `Expires ${formatDate(doc.expiryDate)}`}
+                    </Text>
+                  </View>
                   <StatusBadge status={doc.status} />
                 </View>
               ))}
@@ -144,30 +191,10 @@ export default function BikeDashboardScreen() {
 
         <Text style={styles.sectionTitle}>Manage</Text>
 
-        <NavRow
-          icon={<Wrench size={18} color={colors.primary} strokeWidth={2.2} />}
-          label="Maintenance"
-          onPress={() => router.push({ pathname: '/bike/[id]/maintenance', params: { id: bikeId } })}
-          colors={colors}
-        />
-        <NavRow
-          icon={<Settings size={18} color={colors.primary} strokeWidth={2.2} />}
-          label="Service"
-          onPress={() => router.push({ pathname: '/bike/[id]/service', params: { id: bikeId } })}
-          colors={colors}
-        />
-        <NavRow
-          icon={<Fuel size={18} color={colors.primary} strokeWidth={2.2} />}
-          label="Fuel"
-          onPress={() => router.push({ pathname: '/bike/[id]/fuel', params: { id: bikeId } })}
-          colors={colors}
-        />
-        <NavRow
-          icon={<FileText size={18} color={colors.primary} strokeWidth={2.2} />}
-          label="Documents"
-          onPress={() => router.push({ pathname: '/bike/[id]/documents', params: { id: bikeId } })}
-          colors={colors}
-        />
+        <NavRow icon={<Wrench size={18} color={colors.primary} strokeWidth={2.2} />} label="Maintenance" onPress={() => router.push({ pathname: '/bike/[id]/maintenance', params: { id: bikeId } })} colors={colors} />
+        <NavRow icon={<Settings size={18} color={colors.primary} strokeWidth={2.2} />} label="Service" onPress={() => router.push({ pathname: '/bike/[id]/service', params: { id: bikeId } })} colors={colors} />
+        <NavRow icon={<Fuel size={18} color={colors.primary} strokeWidth={2.2} />} label="Fuel" onPress={() => router.push({ pathname: '/bike/[id]/fuel', params: { id: bikeId } })} colors={colors} />
+        <NavRow icon={<FileText size={18} color={colors.primary} strokeWidth={2.2} />} label="Documents" onPress={() => router.push({ pathname: '/bike/[id]/documents', params: { id: bikeId } })} colors={colors} />
 
         <View style={{ marginTop: Spacing.xl }}>
           <Button label="Delete Bike" onPress={handleDelete} variant="danger" loading={deleting} />
@@ -177,7 +204,6 @@ export default function BikeDashboardScreen() {
   );
 }
 
-// small local component — avoids repeating the same TouchableOpacity 4 times
 function NavRow({
   icon,
   label,
@@ -204,7 +230,7 @@ function NavRow({
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background },
-    content: { padding: Spacing.lg, paddingBottom: Spacing.xl * 2 },
+    content: { padding: Spacing.lg, paddingBottom: 40 },
 
     headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: Spacing.lg },
     bikeName: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, letterSpacing: -0.3 },
@@ -231,8 +257,8 @@ function createStyles(colors: ThemeColors) {
     },
     serviceBannerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     serviceBannerLabel: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: colors.primary, letterSpacing: 0.3 },
-    serviceBannerValue: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text, marginTop: Spacing.xs },
-    serviceBannerSub: { fontSize: Typography.size.xs + 1, color: colors.textSecondary, marginTop: 2 },
+    serviceRemaining: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text, marginTop: Spacing.xs },
+    serviceDueKm: { fontSize: Typography.size.xs + 1, color: colors.textSecondary, marginTop: 2 },
 
     statsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.xl },
     statBox: { flex: 1, backgroundColor: colors.card, borderRadius: Radius.md, padding: Spacing.md, borderWidth: 1, borderColor: colors.border },
@@ -243,7 +269,9 @@ function createStyles(colors: ThemeColors) {
 
     docsCard: { backgroundColor: colors.card, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.lg, borderWidth: 1, borderColor: colors.border },
     docRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.xs + 2 },
+    documentInfo: { flex: 1 },
     docLabel: { fontSize: Typography.size.sm, color: colors.text, textTransform: 'capitalize' },
+    documentExpiry: { fontSize: Typography.size.xs, color: colors.textMuted, marginTop: 2 },
 
     navRow: {
       flexDirection: 'row',
@@ -266,6 +294,5 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
     },
     navRowText: { fontSize: Typography.size.md, color: colors.text, fontWeight: Typography.weight.medium },
-    navRowArrow: { fontSize: Typography.size.lg, color: colors.textMuted },
   });
 }

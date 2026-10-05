@@ -10,13 +10,22 @@ export default function TabsLayout() {
 
   if (!isLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
 
-  if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
 
   return (
     <Tabs
@@ -24,16 +33,37 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarStyle: {
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: 6,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
       }}
     >
       <Tabs.Screen
         name="garage"
-        options={{ title: 'Garage', tabBarIcon: ({ color, size }) => <Bike color={color} size={size} /> }}
+        options={{
+          title: 'Garage',
+          tabBarIcon: ({ color }) => (
+            <Bike color={color} size={22} />
+          ),
+        }}
       />
+
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <User color={color} size={22} />
+          ),
+        }}
       />
     </Tabs>
   );
