@@ -1,121 +1,90 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
+import motoCareLogo from '../../mobile/assets/motocarelogo.png'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <main className="ad">
+      <nav className="ad__nav" aria-label="Main navigation">
+        <a className="brand" href="/" aria-label="MotoCare home">
+          <img className="brand__logo" src={motoCareLogo} alt="MotoCare" />
+        </a>
+        <span className="nav-note">Your ride, remembered.</span>
+      </nav>
+
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero__content">
+          <p className="eyebrow">Made for every mile</p>
+          <h1 id="hero-title">
+            Take better care
+            <br />
+            of your <em>ride.</em>
+          </h1>
+          <p className="hero__copy">
+            The all-in-one companion for riders who want to spend less time
+            remembering and more time riding.
           </p>
+          <a className="button" href="#download">
+            Discover MotoCare
+            <span aria-hidden="true">↗</span>
+          </a>
+          <p className="fine-print">Your bike&apos;s story, all in one app.</p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="bike-card" aria-label="MotoCare motorcycle dashboard preview">
+          <div className="bike-card__glow" />
+          <div className="bike-card__top">
+            <span className="mini-brand">MOTOCARE</span>
+            <span className="status-dot">● All good</span>
+          </div>
+          <div className="bike-illustration" aria-hidden="true">
+            <span className="wheel wheel--back" />
+            <span className="wheel wheel--front" />
+            <span className="frame frame--main" />
+            <span className="frame frame--front" />
+            <span className="seat" />
+            <span className="handlebar" />
+            <span className="headlight" />
+          </div>
+          <div className="bike-card__bottom">
+            <div>
+              <span className="label">Your garage</span>
+              <strong>Ready for the road</strong>
+            </div>
+            <span className="arrow" aria-hidden="true">→</span>
+          </div>
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <section className="features" aria-label="MotoCare app features">
+        <article className="feature">
+          <span className="feature__number">01</span>
+          <div>
+            <h2>Know your bike</h2>
+            <p>Keep every ride, detail, and document organized.</p>
+          </div>
+        </article>
+        <article className="feature">
+          <span className="feature__number">02</span>
+          <div>
+            <h2>Never miss a service</h2>
+            <p>Get simple reminders before small jobs become big ones.</p>
+          </div>
+        </article>
+        <article className="feature">
+          <span className="feature__number">03</span>
+          <div>
+            <h2>Ride with confidence</h2>
+            <p>Fuel, maintenance, and history are ready when you are.</p>
+          </div>
+        </article>
+      </section>
+
+      <footer className="ad__footer" id="download">
+        <span>Built for the way you ride.</span>
+        <span className="footer-line" />
+        <span>Coming soon on iOS &amp; Android</span>
+      </footer>
+    </main>
   )
 }
 
