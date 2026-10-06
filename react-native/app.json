@@ -4,12 +4,12 @@
     "slug": "motocare",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/motocarelogo.png",
+    "icon": "./assets/motocare-app-icon.png",
     "scheme": "motocare",
     "userInterfaceStyle": "automatic",
 
     "ios": {
-      "icon": "./assets/motocarelogo.png",
+      "icon": "./assets/motocare-app-icon.png",
       "bundleIdentifier": "com.belalllll.motocare"
     },
 
@@ -17,13 +17,13 @@
       "package": "com.belalllll.motocare",
       "adaptiveIcon": {
         "backgroundColor": "#A9652B",
-        "foregroundImage": "./assets/motocarelogo.png"
+        "foregroundImage": "./assets/motocare-app-icon.png"
       }
     },
 
     "web": {
       "output": "static",
-      "favicon": "./assets/motocarelogo.png"
+      "favicon": "./assets/motocare-app-icon.png"
     },
 
     "plugins": [

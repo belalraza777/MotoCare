@@ -6,6 +6,7 @@ import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Moon, Sun, Pencil, Check, X, LogOut } from 'lucide-react-native';
 import { useApiClient } from '../../api/client';
 import { Avatar } from '../../components/ui/Avatar';
+import { AppFooter } from '../../components/ui/AppFooter';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
 
@@ -127,6 +128,8 @@ export default function ProfileScreen() {
         <LogOut size={18} color={colors.error} strokeWidth={2.2} />
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
+
+      <AppFooter />
     </SafeAreaView>
   );
 }
@@ -193,7 +196,7 @@ function createStyles(colors: ThemeColors) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: Spacing.sm,
-      marginTop: 'auto',
+      marginTop: Spacing.md,
       marginBottom: Spacing.lg,
       paddingVertical: Spacing.md,
       borderRadius: Radius.sm,
@@ -202,5 +205,6 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.error + '10',
     },
     signOutText: { color: colors.error, fontWeight: Typography.weight.semibold, fontSize: Typography.size.md },
+
   });
 }

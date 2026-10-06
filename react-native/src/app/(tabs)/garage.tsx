@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bike as BikeIcon, Gauge, Plus } from 'lucide-react-native';
+import { Bike as BikeIcon, Warehouse } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useApiClient } from '../../api/client';
 import { useUser } from '@clerk/clerk-expo';
@@ -61,7 +61,6 @@ export default function GarageScreen() {
   if (error) return <ErrorView message={error} onRetry={load} />;
 
   const firstName = user?.firstName || 'Rider';
-  const totalKm = bikes.reduce((sum, b) => sum + (b.currentKm || 0), 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -87,7 +86,6 @@ export default function GarageScreen() {
         ListHeaderComponent={
           bikes.length > 0 ? (
             <View style={styles.header}>
-              {/* Gradient hero card — the visual anchor of the screen */}
               <LinearGradient
                 colors={[colors.primary, colors.primary + 'CC']}
                 start={{ x: 0, y: 0 }}
@@ -105,17 +103,16 @@ export default function GarageScreen() {
                 </View>
 
                 <View style={styles.heroStatsRow}>
-                  <View style={styles.heroStat}>
-                    <BikeIcon size={16} color="#fff" strokeWidth={2.2} />
-                    <Text style={styles.heroStatValue}>{bikes.length}</Text>
-                    <Text style={styles.heroStatLabel}>{bikes.length === 1 ? 'Bike' : 'Bikes'}</Text>
+                  <View style={styles.heroStatIcon}>
+                    <Warehouse size={24} color="#fff" strokeWidth={2.2} />
                   </View>
-                  <View style={styles.heroStatDivider} />
-                  <View style={styles.heroStat}>
-                    <Gauge size={16} color="#fff" strokeWidth={2.2} />
-                    <Text style={styles.heroStatValue}>{totalKm.toLocaleString()}</Text>
-                    <Text style={styles.heroStatLabel}>KM Tracked</Text>
+                  <View style={styles.heroStatContent}>
+                    <Text style={styles.heroStatLabel}>Your garage</Text>
+                    <Text style={styles.heroStatValue}>
+                      {bikes.length} {bikes.length === 1 ? 'bike' : 'bikes'} ready to ride
+                    </Text>
                   </View>
+                  <Text style={styles.heroStatCount}>{bikes.length}</Text>
                 </View>
               </LinearGradient>
 
@@ -142,7 +139,7 @@ export default function GarageScreen() {
           <View style={styles.empty}>
             <LinearGradient
               colors={[colors.primary, colors.primary + 'CC']}
-              style={styles.emptyIconGradient}
+              style={styles.emptyIcon}
             >
               <BikeIcon size={40} color="#fff" strokeWidth={2} />
             </LinearGradient>
@@ -205,13 +202,35 @@ function createStyles(colors: ThemeColors) {
       alignItems: 'center',
       backgroundColor: 'rgba(255,255,255,0.15)',
       borderRadius: Radius.lg,
-      paddingVertical: Spacing.md,
+      padding: Spacing.md,
     },
-    heroStat: { flex: 1, alignItems: 'center', gap: 2 },
-    heroStatValue: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: '#fff', marginTop: 2 },
-    heroStatLabel: { fontSize: Typography.size.xs, color: 'rgba(255,255,255,0.85)' },
-    heroStatDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.25)' },
-
+    heroStatIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255,255,255,0.18)',
+    },
+    heroStatContent: { flex: 1, marginLeft: Spacing.md },
+    heroStatLabel: {
+      fontSize: Typography.size.xs,
+      color: 'rgba(255,255,255,0.78)',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    heroStatValue: {
+      fontSize: Typography.size.md,
+      fontWeight: Typography.weight.bold,
+      color: '#fff',
+      marginTop: 3,
+    },
+    heroStatCount: {
+      fontSize: Typography.size.xxl,
+      fontWeight: Typography.weight.bold,
+      color: '#fff',
+      marginLeft: Spacing.sm,
+    },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -234,7 +253,7 @@ function createStyles(colors: ThemeColors) {
     cardWrapper: { marginBottom: Spacing.md },
 
     empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-    emptyIconGradient: {
+    emptyIcon: {
       width: 88,
       height: 88,
       borderRadius: 28,

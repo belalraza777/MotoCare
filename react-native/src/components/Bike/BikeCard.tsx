@@ -19,16 +19,17 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
   const styles = createStyles(colors);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       {/* Icon tile stands in for a bike photo until image upload is built */}
       <View style={styles.iconTile}>
-        <SvgUri uri={bikeIconUri} width={34} height={34} fill={colors.primary} />
+        <SvgUri uri={bikeIconUri} width={46} height={46} fill={colors.primary} />
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>{item.brand} {item.model}</Text>
+        <Text style={styles.name}>{item.brand} {item.model}</Text>
         {item.variant ? <Text style={styles.variant}>{item.variant}</Text> : null}
         <View style={styles.meta}>
+          <Text style={styles.metaLabel}>Odometer</Text>
           <Text style={styles.metaText}>{item.currentKm.toLocaleString()} km</Text>
           <Text style={styles.metaDot}>•</Text>
           <Fuel color={colors.textMuted} size={14} strokeWidth={2} />
@@ -36,7 +37,9 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
         </View>
       </View>
 
-      <ChevronRight color={colors.textMuted} size={18} strokeWidth={2.2} />
+      <View style={styles.chevronCircle}>
+        <ChevronRight color={colors.primary} size={18} strokeWidth={2.4} />
+      </View>
     </TouchableOpacity>
   );
 }
@@ -47,28 +50,43 @@ function createStyles(colors: ThemeColors) {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: colors.card,
-      borderRadius: Radius.lg,
-      padding: Spacing.md,
+      borderRadius: Radius.xl,
+      padding: Spacing.lg,
       marginBottom: Spacing.md,
       borderWidth: 1,
       borderColor: colors.border,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      elevation: 3,
     },
     iconTile: {
-      width: 52,
-      height: 52,
-      borderRadius: Radius.md,
+      width: 72,
+      height: 72,
+      borderRadius: Radius.lg,
       backgroundColor: colors.primarySoft,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: Spacing.md,
+      marginRight: Spacing.lg,
+      borderWidth: 1,
+      borderColor: colors.primary + '35',
     },
     info: { flex: 1 },
-    name: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text },
-    variant: { fontSize: Typography.size.xs + 1, color: colors.textSecondary, marginTop: 1 },
-    meta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs + 2, marginTop: Spacing.xs },
-    metaText: { fontSize: Typography.size.xs, color: colors.textMuted },
+    name: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
+    variant: { fontSize: Typography.size.sm, color: colors.textSecondary, marginTop: 3 },
+    meta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.xs + 2, marginTop: Spacing.sm },
+    metaLabel: { fontSize: Typography.size.xs, color: colors.textMuted },
+    metaText: { fontSize: Typography.size.xs, color: colors.textSecondary, fontWeight: Typography.weight.semibold },
     metaDot: { fontSize: Typography.size.xs, color: colors.textMuted },
-
-    chevron: { fontSize: 22, color: colors.textMuted, marginLeft: Spacing.sm },
+    chevronCircle: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primarySoft,
+      marginLeft: Spacing.sm,
+    },
   });
 }
