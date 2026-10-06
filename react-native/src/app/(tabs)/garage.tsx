@@ -5,9 +5,9 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Image,
 } from 'react-native';
-import { SvgUri } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Bike as BikeIcon, Gauge, Plus } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useApiClient } from '../../api/client';
 import { useUser } from '@clerk/clerk-expo';
@@ -17,17 +17,15 @@ import { LoadingView, ErrorView } from '../../components/ui/StateViews';
 import { Fab } from '../../components/ui/Fab';
 import { Button } from '../../components/ui/Button';
 import { useTheme } from '../../context/ThemeContext';
-import {
-  Radius,
-  Spacing,
-  Typography,
-  ThemeColors,
-} from '../../constants/theme';
+import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const bikeIconUri = Image.resolveAssetSource(
-  require('../../../assets/bikeIcon.svg')
-).uri;
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function GarageScreen() {
   const api = useApiClient();
@@ -43,7 +41,6 @@ export default function GarageScreen() {
 
   const load = useCallback(async () => {
     setError(null);
-
     try {
       setBikes(await api.bikes.getAll());
     } catch (err: any) {
@@ -64,6 +61,7 @@ export default function GarageScreen() {
   if (error) return <ErrorView message={error} onRetry={load} />;
 
   const firstName = user?.firstName || 'Rider';
+  const totalKm = bikes.reduce((sum, b) => sum + (b.currentKm || 0), 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -89,27 +87,40 @@ export default function GarageScreen() {
         ListHeaderComponent={
           bikes.length > 0 ? (
             <View style={styles.header}>
-              <View style={styles.greetingRow}>
-                <View style={styles.headerText}>
-                  <Text style={styles.greeting}>Good to see you,</Text>
-                  <Text style={styles.name}>{firstName}</Text>
+              {/* Gradient hero card — the visual anchor of the screen */}
+              <LinearGradient
+                colors={[colors.primary, colors.primary + 'CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.hero}
+              >
+                <View style={styles.heroTop}>
+                  <View>
+                    <Text style={styles.heroGreeting}>{getGreeting()},</Text>
+                    <Text style={styles.heroName}>{firstName}</Text>
+                  </View>
+                  <View style={styles.heroIconCircle}>
+                    <BikeIcon size={26} color="#fff" strokeWidth={2.2} />
+                  </View>
                 </View>
 
-                <View style={styles.headerIcon}>
-                  <SvgUri uri={bikeIconUri} width={28} height={28} fill={colors.primary} />
+                <View style={styles.heroStatsRow}>
+                  <View style={styles.heroStat}>
+                    <BikeIcon size={16} color="#fff" strokeWidth={2.2} />
+                    <Text style={styles.heroStatValue}>{bikes.length}</Text>
+                    <Text style={styles.heroStatLabel}>{bikes.length === 1 ? 'Bike' : 'Bikes'}</Text>
+                  </View>
+                  <View style={styles.heroStatDivider} />
+                  <View style={styles.heroStat}>
+                    <Gauge size={16} color="#fff" strokeWidth={2.2} />
+                    <Text style={styles.heroStatValue}>{totalKm.toLocaleString()}</Text>
+                    <Text style={styles.heroStatLabel}>KM Tracked</Text>
+                  </View>
                 </View>
-              </View>
+              </LinearGradient>
 
               <View style={styles.sectionHeader}>
-                <View>
-                  <Text style={styles.sectionTitle}>Your Garage</Text>
-                  <Text style={styles.sectionSubtitle}>
-                    {bikes.length === 1
-                      ? '1 bike in your garage'
-                      : `${bikes.length} bikes in your garage`}
-                  </Text>
-                </View>
-
+                <Text style={styles.sectionTitle}>Your Garage</Text>
                 <View style={styles.countBadge}>
                   <Text style={styles.countText}>{bikes.length}</Text>
                 </View>
@@ -122,168 +133,121 @@ export default function GarageScreen() {
             <BikeCard
               item={item}
               onPress={() =>
-                router.push({
-                  pathname: '/bike/[id]',
-                  params: { id: item._id },
-                })
+                router.push({ pathname: '/bike/[id]', params: { id: item._id } })
               }
             />
           </View>
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <View style={styles.emptyIcon}>
-              <SvgUri uri={bikeIconUri} width={44} height={44} fill={colors.primary} />
-            </View>
+            <LinearGradient
+              colors={[colors.primary, colors.primary + 'CC']}
+              style={styles.emptyIconGradient}
+            >
+              <BikeIcon size={40} color="#fff" strokeWidth={2} />
+            </LinearGradient>
 
             <Text style={styles.emptyTitle}>Your garage is empty</Text>
-
             <Text style={styles.emptySubtitle}>
-              Add your first bike to keep track of its service, maintenance,
-              fuel, and documents.
+              Add your first bike to keep track of its service, maintenance, fuel, and documents.
             </Text>
 
             <View style={styles.emptyButton}>
-              <Button
-                label="Add Your First Bike"
-                onPress={() => router.push('/bike/add')}
-              />
+              <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
             </View>
           </View>
         }
       />
 
-      {bikes.length > 0 && (
-        <Fab
-          onPress={() => router.push('/bike/add')}
-          bottomOffset={65}
-        />
-      )}
+      {bikes.length > 0 && <Fab onPress={() => router.push('/bike/add')} bottomOffset={65} />}
     </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
+    container: { flex: 1, backgroundColor: colors.background },
 
-    listContent: {
-      paddingHorizontal: Spacing.lg,
-      paddingTop: Spacing.lg,
-      paddingBottom: 110,
-    },
+    listContent: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: 110 },
+    listContentEmpty: { flexGrow: 1 },
 
-    listContentEmpty: {
-      flexGrow: 1,
-    },
+    header: { marginBottom: Spacing.lg },
 
-    header: {
+    hero: {
+      borderRadius: Radius.xl,
+      padding: Spacing.lg,
+      marginBottom: Spacing.xl,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    heroTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       marginBottom: Spacing.lg,
     },
-
-    greetingRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: Spacing.xl,
-    },
-
-    headerText: {
-      flex: 1,
-    },
-
-    greeting: {
-      fontSize: Typography.size.sm,
-      color: colors.textSecondary,
-    },
-
-    name: {
-      fontSize: Typography.size.xxl,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-      marginTop: Spacing.xs,
-    },
-
-    headerIcon: {
-      width: 46,
-      height: 46,
-      borderRadius: Radius.lg,
+    heroGreeting: { fontSize: Typography.size.sm, color: 'rgba(255,255,255,0.85)' },
+    heroName: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: '#fff', marginTop: 2 },
+    heroIconCircle: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255,255,255,0.2)',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.primary + '12',
-      borderWidth: 1,
-      borderColor: colors.primary + '20',
     },
+
+    heroStatsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      borderRadius: Radius.lg,
+      paddingVertical: Spacing.md,
+    },
+    heroStat: { flex: 1, alignItems: 'center', gap: 2 },
+    heroStatValue: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: '#fff', marginTop: 2 },
+    heroStatLabel: { fontSize: Typography.size.xs, color: 'rgba(255,255,255,0.85)' },
+    heroStatDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.25)' },
 
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
     },
-
-    sectionTitle: {
-      fontSize: Typography.size.lg,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-    },
-
-    sectionSubtitle: {
-      fontSize: Typography.size.sm,
-      color: colors.textSecondary,
-      marginTop: 3,
-    },
-
+    sectionTitle: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
     countBadge: {
-      minWidth: 34,
-      height: 34,
+      minWidth: 28,
+      height: 28,
       paddingHorizontal: Spacing.sm,
-      borderRadius: 17,
+      borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
     },
+    countText: { fontSize: Typography.size.xs, fontWeight: Typography.weight.bold, color: colors.text },
 
-    countText: {
-      fontSize: Typography.size.sm,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-    },
+    cardWrapper: { marginBottom: Spacing.md },
 
-    cardWrapper: {
-      marginBottom: Spacing.md,
-    },
-
-    empty: {
-      flex: 1,
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
+    emptyIconGradient: {
+      width: 88,
+      height: 88,
+      borderRadius: 28,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: Spacing.xl,
-    },
-
-    emptyIcon: {
-      width: 76,
-      height: 76,
-      borderRadius: 24,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.primary + '12',
-      borderWidth: 1,
-      borderColor: colors.primary + '20',
       marginBottom: Spacing.lg,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      elevation: 5,
     },
-
-    emptyTitle: {
-      fontSize: Typography.size.lg,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-      textAlign: 'center',
-    },
-
+    emptyTitle: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text, textAlign: 'center' },
     emptySubtitle: {
       fontSize: Typography.size.sm,
       color: colors.textMuted,
@@ -292,9 +256,6 @@ function createStyles(colors: ThemeColors) {
       marginTop: Spacing.sm,
       marginBottom: Spacing.xl,
     },
-
-    emptyButton: {
-      width: '100%',
-    },
+    emptyButton: { width: '100%' },
   });
 }
