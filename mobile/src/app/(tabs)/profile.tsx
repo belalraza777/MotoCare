@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { Moon, Sun, Pencil, Check, X, LogOut } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Moon, Sun, Pencil, Check, X, LogOut, Bike, Sparkles } from 'lucide-react-native';
 import { useApiClient } from '../../api/client';
 import { Avatar } from '../../components/ui/Avatar';
 import { AppFooter } from '../../components/ui/AppFooter';
@@ -63,29 +64,44 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Avatar imageUrl={user?.imageUrl} name={user?.fullName} size={72} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.screenTitle}>Profile</Text>
+
+        <LinearGradient
+          colors={[colors.primary, colors.primary + 'CC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.profileHero}
+        >
+        <Sparkles size={18} color="rgba(255,255,255,0.7)" style={styles.heroSparkle} />
+        <View style={styles.avatarRing}>
+          <Avatar imageUrl={user?.imageUrl} name={user?.fullName} size={76} />
+        </View>
 
         {!editing ? (
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{displayName}</Text>
+          <View style={styles.heroNameRow}>
+            <Text style={styles.heroName}>{displayName}</Text>
             <TouchableOpacity style={styles.editIconBtn} onPress={startEdit}>
-              <Pencil size={14} color={colors.primary} strokeWidth={2.4} />
+              <Pencil size={14} color="#fff" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.editForm}>
             <TextInput
-              style={styles.input}
+              style={styles.heroInput}
               placeholder="First name"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor="rgba(255,255,255,0.65)"
               value={firstName}
               onChangeText={setFirstName}
             />
             <TextInput
-              style={styles.input}
+              style={styles.heroInput}
               placeholder="Last name (optional)"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor="rgba(255,255,255,0.65)"
               value={lastName}
               onChangeText={setLastName}
             />
@@ -102,16 +118,25 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        <Text style={styles.email}>{user?.primaryEmailAddress?.emailAddress}</Text>
-      </View>
+        <Text style={styles.heroEmail}>{user?.primaryEmailAddress?.emailAddress}</Text>
+        <View style={styles.memberPill}>
+          <Bike size={13} color="#fff" strokeWidth={2.2} />
+          <Text style={styles.memberText}>MotoCare rider</Text>
+        </View>
+        </LinearGradient>
 
-      <View style={styles.statsRow}>
+        <View style={styles.statsRow}>
         <View style={styles.statBox}>
+          <View style={[styles.statIcon, { backgroundColor: colors.primarySoft }]}>
+            <Bike size={18} color={colors.primary} strokeWidth={2.2} />
+          </View>
           <Text style={styles.statValue}>{bikeCount ?? '—'}</Text>
           <Text style={styles.statLabel}>Bikes in Garage</Text>
         </View>
         <View style={styles.statBox}>
-          {isDark ? <Moon color={colors.primary} size={24} strokeWidth={2.2} /> : <Sun color={colors.primary} size={24} strokeWidth={2.2} />}
+          <View style={[styles.statIcon, { backgroundColor: colors.info + '18' }]}>
+            {isDark ? <Moon color={colors.info} size={18} strokeWidth={2.2} /> : <Sun color={colors.info} size={18} strokeWidth={2.2} />}
+          </View>
           <Text style={styles.statLabel}>{isDark ? 'Dark Mode' : 'Light Mode'}</Text>
           <Switch
             value={isDark}
@@ -122,37 +147,78 @@ export default function ProfileScreen() {
             style={styles.themeSwitch}
           />
         </View>
-      </View>
+        </View>
 
-      <TouchableOpacity style={styles.signOutRow} onPress={() => signOut()}>
-        <LogOut size={18} color={colors.error} strokeWidth={2.2} />
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.signOutRow} onPress={() => signOut()}>
+          <LogOut size={18} color={colors.error} strokeWidth={2.2} />
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
 
-      <AppFooter />
+        <AppFooter />
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background, padding: Spacing.lg },
-    header: { alignItems: 'center', marginTop: Spacing.xl, marginBottom: Spacing.xl },
+    container: { flex: 1, backgroundColor: colors.background },
+    scrollContent: { flexGrow: 1, padding: Spacing.lg, paddingBottom: Spacing.xl },
+    screenTitle: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text, marginBottom: Spacing.lg },
+    profileHero: {
+      borderRadius: Radius.xl,
+      alignItems: 'center',
+      padding: Spacing.xl,
+      overflow: 'hidden',
+      marginBottom: Spacing.lg,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      elevation: 5,
+    },
+    heroSparkle: { position: 'absolute', top: Spacing.lg, right: Spacing.lg },
+    avatarRing: {
+      padding: 4,
+      borderRadius: 44,
+      backgroundColor: 'rgba(255,255,255,0.24)',
+      marginBottom: Spacing.sm,
+    },
 
-    nameRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.md },
-    name: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text },
+    heroNameRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.sm },
+    heroName: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: '#fff' },
     editIconBtn: {
       width: 28,
       height: 28,
       borderRadius: 14,
-      backgroundColor: colors.primarySoft,
+      backgroundColor: 'rgba(255,255,255,0.2)',
       alignItems: 'center',
       justifyContent: 'center',
     },
 
-    email: { fontSize: Typography.size.sm, color: colors.textMuted, marginTop: Spacing.xs },
+    heroEmail: { fontSize: Typography.size.sm, color: 'rgba(255,255,255,0.78)', marginTop: Spacing.xs },
+    memberPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      marginTop: Spacing.md,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs,
+      borderRadius: Radius.xl,
+      backgroundColor: 'rgba(255,255,255,0.16)',
+    },
+    memberText: { fontSize: Typography.size.xs, color: '#fff', fontWeight: Typography.weight.medium },
 
     editForm: { width: '100%', marginTop: Spacing.md, gap: Spacing.sm },
+    heroInput: {
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.35)',
+      borderRadius: Radius.sm,
+      padding: Spacing.md,
+      color: '#fff',
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      fontSize: Typography.size.md,
+    },
     input: {
       borderWidth: 1,
       borderColor: colors.border,
@@ -187,10 +253,17 @@ function createStyles(colors: ThemeColors) {
       borderWidth: 1,
       borderColor: colors.border,
     },
+    statIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: Spacing.sm,
+    },
     statValue: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text },
     statLabel: { fontSize: Typography.size.xs + 1, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
     themeSwitch: { marginTop: Spacing.xs },
-
     signOutRow: {
       flexDirection: 'row',
       alignItems: 'center',

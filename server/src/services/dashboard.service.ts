@@ -21,9 +21,9 @@ function startOfMonth(): Date {
 // so a bike with no service history still gets a sane next-due estimate
 async function getServiceDueInfo(bike: InstanceType<typeof Bike>) {
   const lastService = await Service.findOne({ bikeId: bike._id }).sort({ date: -1, odometer: -1 });
-  const baselineKm = lastService?.odometer ?? bike.currentKm;
-  const nextDueKm = baselineKm + bike.serviceIntervalKm;
-  const remainingKm = Math.max(nextDueKm - bike.currentKm, 0);
+  const baselineKm = lastService?.odometer ?? bike.currentKm; // Use last service odometer or currentKm if no service exists
+  const nextDueKm = baselineKm + bike.serviceIntervalKm;  // Calculate the next due kilometers
+  const remainingKm = Math.max(nextDueKm - bike.currentKm, 0); // Calculate remaining kilometers, ensuring it doesn't go below 0
   const status = nextDueKm <= bike.currentKm ? 'overdue' : remainingKm <= DUE_SOON_THRESHOLD_KM ? 'due_soon' : 'normal';
 
   return { lastServiceDate: lastService?.date ?? null, nextDueKm, remainingKm, status };

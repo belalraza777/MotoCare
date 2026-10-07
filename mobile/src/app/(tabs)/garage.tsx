@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bike as BikeIcon, Warehouse } from 'lucide-react-native';
+import { Bike as BikeIcon, CheckCircle2, ShieldCheck, Sparkles, Warehouse, Wrench } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useApiClient } from '../../api/client';
 import { useUser } from '@clerk/clerk-expo';
@@ -137,20 +137,50 @@ export default function GarageScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <LinearGradient
-              colors={[colors.primary, colors.primary + 'CC']}
-              style={styles.emptyIcon}
-            >
-              <BikeIcon size={40} color="#fff" strokeWidth={2} />
-            </LinearGradient>
+            <View style={styles.emptyCard}>
+              <LinearGradient
+                colors={[colors.primary, colors.primary + 'CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.emptyBanner}
+              >
+                <View style={styles.emptySparkle}>
+                  <Sparkles size={16} color="#fff" strokeWidth={2.2} />
+                </View>
+                <View style={styles.emptyIcon}>
+                  <Warehouse size={42} color="#fff" strokeWidth={1.8} />
+                  <View style={styles.emptyBikeBadge}>
+                    <BikeIcon size={20} color={colors.primary} strokeWidth={2.2} />
+                  </View>
+                </View>
+                <Text style={styles.emptyBannerText}>Your ride deserves a home</Text>
+              </LinearGradient>
 
-            <Text style={styles.emptyTitle}>Your garage is empty</Text>
-            <Text style={styles.emptySubtitle}>
-              Add your first bike to keep track of its service, maintenance, fuel, and documents.
-            </Text>
+              <View style={styles.emptyContent}>
+                <Text style={styles.emptyTitle}>Build your digital garage</Text>
+                <Text style={styles.emptySubtitle}>
+                  Keep every service, maintenance reminder, fuel entry, and document for your bike in one place.
+                </Text>
 
-            <View style={styles.emptyButton}>
-              <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
+                <View style={styles.emptyBenefits}>
+                  <View style={styles.emptyBenefit}>
+                    <CheckCircle2 size={17} color={colors.success} strokeWidth={2.2} />
+                    <Text style={styles.emptyBenefitText}>Stay on top of service</Text>
+                  </View>
+                  <View style={styles.emptyBenefit}>
+                    <Wrench size={17} color={colors.primary} strokeWidth={2.2} />
+                    <Text style={styles.emptyBenefitText}>Track maintenance with ease</Text>
+                  </View>
+                  <View style={styles.emptyBenefit}>
+                    <ShieldCheck size={17} color={colors.info} strokeWidth={2.2} />
+                    <Text style={styles.emptyBenefitText}>Keep records ready</Text>
+                  </View>
+                </View>
+
+                <View style={styles.emptyButton}>
+                  <Button label="Add Your First Bike" onPress={() => router.push('/bike/add')} />
+                </View>
+              </View>
             </View>
           </View>
         }
@@ -252,19 +282,69 @@ function createStyles(colors: ThemeColors) {
 
     cardWrapper: { marginBottom: Spacing.md },
 
-    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-    emptyIcon: {
-      width: 88,
-      height: 88,
-      borderRadius: 28,
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing.xl },
+    emptyCard: {
+      width: '100%',
+      overflow: 'hidden',
+      borderRadius: Radius.xl,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.08,
+      shadowRadius: 14,
+      elevation: 3,
+    },
+    emptyBanner: {
+      minHeight: 174,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: Spacing.lg,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.3,
-      shadowRadius: 10,
-      elevation: 5,
+      padding: Spacing.lg,
+      position: 'relative',
+    },
+    emptySparkle: {
+      position: 'absolute',
+      top: Spacing.md,
+      right: Spacing.lg,
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255,255,255,0.18)',
+    },
+    emptyIcon: {
+      width: 82,
+      height: 82,
+      borderRadius: 26,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255,255,255,0.18)',
+      position: 'relative',
+    },
+    emptyBikeBadge: {
+      position: 'absolute',
+      right: -8,
+      bottom: -5,
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderColor: 'rgba(255,255,255,0.7)',
+    },
+    emptyBannerText: {
+      marginTop: Spacing.md,
+      fontSize: Typography.size.md,
+      fontWeight: Typography.weight.semibold,
+      color: '#fff',
+    },
+    emptyContent: {
+      padding: Spacing.xl,
+      alignItems: 'center',
     },
     emptyTitle: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text, textAlign: 'center' },
     emptySubtitle: {
@@ -273,7 +353,26 @@ function createStyles(colors: ThemeColors) {
       textAlign: 'center',
       lineHeight: 20,
       marginTop: Spacing.sm,
+      marginBottom: Spacing.lg,
+    },
+    emptyBenefits: {
+      width: '100%',
+      gap: Spacing.sm,
       marginBottom: Spacing.xl,
+    },
+    emptyBenefit: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      borderRadius: Radius.md,
+      backgroundColor: colors.background,
+    },
+    emptyBenefitText: {
+      marginLeft: Spacing.sm,
+      fontSize: Typography.size.sm,
+      color: colors.textSecondary,
+      fontWeight: Typography.weight.medium,
     },
     emptyButton: { width: '100%' },
   });

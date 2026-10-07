@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors()); // Enable CORS for all routes
 app.use(helmet()); // Enable Helmet for security headers
 app.use(morgan("dev")); // Enable Morgan for logging
-// app.use(rateLimitMiddleware); //Rate Limit
+app.use(rateLimitMiddleware); //Rate Limit
 app.use(clerkMiddleware()); // Clerk middleware to handle authentication and user sessions
 
 // Health check endpoint
