@@ -1,13 +1,10 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ChevronRight, Fuel } from 'lucide-react-native';
-import { SvgUri } from 'react-native-svg';
 import { Bike } from '../../types/bike.types';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
 
-const bikeIconUri = Image.resolveAssetSource(
-  require('../../../assets/bikeIcon.svg')
-).uri;
+import BikeIcon from '../../../assets/bikeIcon.svg';
 
 interface BikeCardProps {
   item: Bike;
@@ -22,7 +19,7 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       {/* Icon tile stands in for a bike photo until image upload is built */}
       <View style={styles.iconTile}>
-        <SvgUri uri={bikeIconUri} width={46} height={46} fill={colors.primary} />
+        <BikeIcon width={46} height={46} fill={colors.primary} />
       </View>
 
       <View style={styles.info}>
