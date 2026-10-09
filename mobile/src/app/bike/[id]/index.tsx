@@ -41,8 +41,8 @@ export default function BikeDashboardScreen() {
   const [error, setError] = useState<string | null>(null);
 
 
-  // reminders should only be scheduled once per real data change, not on
-  // every focus — track the last bikeId we scheduled for
+  // Reminders should only be scheduled once per real data change, not on
+  // every focus.
   const lastScheduledFor = useRef<string | null>(null);
 
   // Load dashboard data
@@ -55,9 +55,24 @@ export default function BikeDashboardScreen() {
       const data = await api.dashboard.get(bikeId);
       setDashboard(data);
 
-      if (lastScheduledFor.current !== bikeId) {
-        scheduleBikeReminders(data);
-        lastScheduledFor.current = bikeId;
+      const reminderKey = [
+        bikeId,
+        data.documents
+          .map((document) => `${document._id}:${document.expiryDate}:${document.status}`)
+          .join(','),
+        data.serviceDue.status,
+        data.serviceDue.remainingKm,
+        data.serviceDue.nextDueKm,
+      ].join('|');
+
+      if (lastScheduledFor.current !== reminderKey) {
+        scheduleBikeReminders(data)
+          .then(() => {
+            lastScheduledFor.current = reminderKey;
+          })
+          .catch((notificationError) => {
+            console.error('Failed to schedule bike reminders', notificationError);
+          });
       }
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to load dashboard');

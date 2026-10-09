@@ -118,8 +118,10 @@ See the backend route reference in
 ## Notifications
 
 Reminder notifications require a physical device. Simulators and emulators may
-not reliably receive them. The app requests notification permission when the
-root layout mounts and schedules future reminders locally.
+not reliably receive them. The app creates the Android notification channel
+before requesting permission, then schedules future reminders locally. The
+production build includes the `expo-notifications` config plugin, so rebuild
+the native app after changing notification configuration.
 
 ## Building with EAS
 
