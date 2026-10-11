@@ -16,6 +16,7 @@ import { LoadingView, ErrorView } from '../../../components/ui/StateViews';
 import { Button } from '../../../components/ui/Button';
 import { ServiceStatusBadge } from '../../../components/ui/ServiceStatusBadge';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
+import { UpdateKmModal } from '../../../components/Bike/UpdateKmModal';
 import { useTheme } from '../../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../../constants/theme';
 import { scheduleBikeReminders } from '../../../lib/reminderScheduler';
@@ -39,7 +40,9 @@ export default function BikeDashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [kmModalOpen, setKmModalOpen] = useState(false);
+  const [kmSaving, setKmSaving] = useState(false);
+  const [kmError, setKmError] = useState<string | null>(null);
 
   // Reminders should only be scheduled once per real data change, not on
   // every focus.
@@ -65,15 +68,15 @@ export default function BikeDashboardScreen() {
         data.serviceDue.nextDueKm,
       ].join('|');
 
-      if (lastScheduledFor.current !== reminderKey) {
-        scheduleBikeReminders(data)
-          .then(() => {
-            lastScheduledFor.current = reminderKey;
-          })
-          .catch((notificationError) => {
-            console.error('Failed to schedule bike reminders', notificationError);
-          });
-      }
+      // if (lastScheduledFor.current !== reminderKey) {
+      //   scheduleBikeReminders(data)
+      //     .then(() => {
+      //       lastScheduledFor.current = reminderKey;
+      //     })
+      //     .catch((notificationError) => {
+      //       console.error('Failed to schedule bike reminders', notificationError);
+      //     });
+      // }
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to load dashboard');
     } finally {
@@ -92,6 +95,31 @@ export default function BikeDashboardScreen() {
   const onPullToRefresh = useCallback(() => {
     load(true);
   }, [load]);
+
+  // Update KM handlers
+  const saveKm = async (km: number) => {
+    setKmSaving(true);
+    setKmError(null);
+    try {
+      await api.bikes.update(bikeId, { currentKm: km });
+      setKmModalOpen(false);
+      await load();
+    } catch (err: any) {
+      setKmError(err.response?.data?.message ?? 'Failed to update KM');
+    } finally {
+      setKmSaving(false);
+    }
+  };
+  const handleKmSubmit = (km: number) => {
+    Alert.alert(
+      'Confirm odometer update',
+      `Set the odometer to ${km.toLocaleString()} km? This value can't be lowered later.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Save', onPress: () => saveKm(km) },
+      ]
+    );
+  };
 
   // Delete bike handler
   const handleDelete = () => {
@@ -175,10 +203,21 @@ export default function BikeDashboardScreen() {
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{bike.currentKm.toLocaleString()}</Text>
+          <TouchableOpacity
+            style={styles.statBox}
+            activeOpacity={0.7}
+            onPress={() => {
+              setKmError(null);
+              setKmModalOpen(true);
+            }}
+          >
+            <View style={styles.statValueRow}>
+              <Text style={styles.statValue}>{bike.currentKm.toLocaleString()}</Text>
+              <Pencil size={12} color={colors.primary} strokeWidth={2.4} />
+            </View>
             <Text style={styles.statLabel}>Current KM</Text>
-          </View>
+            <Text style={styles.statAction}>Tap to edit</Text>
+          </TouchableOpacity>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>₹{expenses.thisMonth.toLocaleString()}</Text>
             <Text style={styles.statLabel}>This Month</Text>
@@ -223,6 +262,14 @@ export default function BikeDashboardScreen() {
           <Button label="Delete Bike" onPress={handleDelete} variant="danger" loading={deleting} />
         </View>
       </ScrollView>
+      <UpdateKmModal
+        visible={kmModalOpen}
+        currentKm={bike.currentKm}
+        loading={kmSaving}
+        serverError={kmError}
+        onClose={() => setKmModalOpen(false)}
+        onSubmit={handleKmSubmit}
+      />
     </SafeAreaView>
   );
 }
@@ -285,8 +332,10 @@ function createStyles(colors: ThemeColors) {
 
     statsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.xl },
     statBox: { flex: 1, backgroundColor: colors.card, borderRadius: Radius.md, padding: Spacing.md, borderWidth: 1, borderColor: colors.border },
+    statValueRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     statValue: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text },
     statLabel: { fontSize: Typography.size.xs, color: colors.textMuted, marginTop: 2, letterSpacing: 0.3 },
+    statAction: { fontSize: Typography.size.xs, color: colors.primary, marginTop: Spacing.xs, fontWeight: Typography.weight.semibold },
 
     sectionTitle: { fontSize: Typography.size.md, fontWeight: Typography.weight.semibold, color: colors.text, marginBottom: Spacing.sm, marginTop: Spacing.sm },
 

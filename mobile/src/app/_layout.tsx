@@ -32,9 +32,11 @@ function AppContent() {
 
 // RootLayout component is the main layout for the app, wrapping the content with necessary providers and handling notifications.
 export default function RootLayout() {
-  useEffect(() => {
-    registerForNotificationsAsync();
-  }, []);
+
+  // Register for push notifications when the component mounts.
+  // useEffect(() => {
+  //   registerForNotificationsAsync();
+  // }, []);
 
   return (
     <SafeAreaProvider>
