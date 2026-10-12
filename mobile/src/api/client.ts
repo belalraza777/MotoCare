@@ -7,8 +7,9 @@ import { createFuelApi } from './fuel.api';
 import { createServiceApi } from './service.api';
 import { createDocumentApi } from './document.api';
 import { createDashboardApi } from './dashboard.api';
+import { createLogApi } from './log.api';
 
-const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api';
+const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.13:8000/api';
 
 // This hook provides an API client with methods for interacting with various endpoints.
 export function useApiClient() {
@@ -43,6 +44,7 @@ export function useApiClient() {
       services: createServiceApi(instance),
       documents: createDocumentApi(instance),
       dashboard: createDashboardApi(instance),
+      logs: createLogApi(instance),
     };
   }, [baseUrl]);
 }

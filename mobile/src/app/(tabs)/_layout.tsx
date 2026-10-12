@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { Redirect, Tabs } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
-import { Bike, User } from 'lucide-react-native';
+import { Bike, ClipboardList, User } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TabsLayout() {
@@ -57,6 +57,16 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="log"
+        options={{
+          title: 'Logs',
+          tabBarIcon: ({ color }) => (
+            <ClipboardList color={color} size={22} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -68,3 +78,4 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+

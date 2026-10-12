@@ -44,7 +44,7 @@ export const Colors = {
   },
 } as const;
 
-export type ThemeColors = typeof Colors.light;
+export type ThemeColors = typeof Colors.light | typeof Colors.dark;
 export type ThemeName = keyof typeof Colors;
 
 export const Radius = {

@@ -5,6 +5,7 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bike as BikeIcon, CheckCircle2, ShieldCheck, Sparkles, Warehouse, Wrench } from 'lucide-react-native';
@@ -84,14 +85,29 @@ export default function GarageScreen() {
           />
         }
         ListHeaderComponent={
-          bikes.length > 0 ? (
-            <View style={styles.header}>
-              <LinearGradient
-                colors={[colors.primary, colors.primary + 'CC']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.hero}
-              >
+          <View style={styles.header}>
+            <View style={styles.brandHeader}>
+              <View style={styles.brandMark}>
+                <Image
+                  source={require('../../../assets/motocarelogo.png')}
+                  style={styles.brandLogo}
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={styles.brandCopy}>
+                <Text style={styles.brandName}>MotoCare</Text>
+                <Text style={styles.brandTagline}>Ride better · Maintain longer</Text>
+              </View>
+            </View>
+
+            {bikes.length > 0 ? (
+              <>
+                <LinearGradient
+                  colors={[colors.primary, colors.primary + 'CC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.hero}
+                >
                 <View style={styles.heroTop}>
                   <View>
                     <Text style={styles.heroGreeting}>{getGreeting()},</Text>
@@ -114,16 +130,17 @@ export default function GarageScreen() {
                   </View>
                   <Text style={styles.heroStatCount}>{bikes.length}</Text>
                 </View>
-              </LinearGradient>
+                </LinearGradient>
 
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Your Garage</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countText}>{bikes.length}</Text>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Your Garage</Text>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{bikes.length}</Text>
+                  </View>
                 </View>
-              </View>
-            </View>
-          ) : null
+              </>
+            ) : null}
+          </View>
         }
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
@@ -199,6 +216,41 @@ function createStyles(colors: ThemeColors) {
     listContentEmpty: { flexGrow: 1 },
 
     header: { marginBottom: Spacing.lg },
+    brandHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.xs,
+      marginBottom: Spacing.lg,
+    },
+    brandMark: {
+      width: 48,
+      height: 48,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: colors.text,
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    },
+    brandLogo: { width: 36, height: 36 },
+    brandCopy: { flex: 1, marginLeft: Spacing.md },
+    brandName: {
+      fontSize: Typography.size.xl,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+      letterSpacing: 0.4,
+    },
+    brandTagline: {
+      fontSize: Typography.size.xs,
+      color: colors.textMuted,
+      marginTop: 3,
+      letterSpacing: 0.2,
+    },
 
     hero: {
       borderRadius: Radius.xl,
