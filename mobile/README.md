@@ -29,10 +29,12 @@ EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key
 EXPO_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
-The API URL must be reachable from the device:
+The API URL must be reachable from the device. If
+`EXPO_PUBLIC_API_URL` is omitted, the client uses
+`http://192.168.1.13:8000/api` as its development fallback:
 
-- Android emulator: use `http://10.0.2.2:8000/api` for an API running on the
-  host machine.
+- Android emulator: set `EXPO_PUBLIC_API_URL` to
+  `http://10.0.2.2:8000/api` for an API running on the host machine.
 - iOS simulator: `http://localhost:8000/api` usually works.
 - Physical device: use the host computer's LAN IP, for example
   `http://192.168.1.10:8000/api`.

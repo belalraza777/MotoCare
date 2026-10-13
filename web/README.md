@@ -1,75 +1,74 @@
-# React + TypeScript + Vite
+# MotoCare Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The MotoCare web app is a Vite and React landing page for the MotoCare
+motorcycle companion app. The mobile client contains the authenticated
+motorcycle management experience; the API is provided by the backend service.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20 or newer
+- npm
 
-## React Compiler
+## Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+From this directory:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+The web app does not require environment variables for local development. It
+uses the MotoCare logo from the mobile app's shared assets.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Development
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Start the Vite development server:
 
+```bash
+npm run dev
 ```
+
+Open the URL printed by Vite, usually `http://localhost:5173`.
+
+## Quality checks
+
+Run linting and create a production build:
+
+```bash
+npm run lint
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Features
+
+The landing page highlights:
+
+- Motorcycle garage and vehicle details
+- Maintenance reminders
+- Fuel and service history
+- Vehicle document tracking
+- The MotoCare mobile app's iOS and Android availability
+
+## Project structure
+
+```text
+src/
+├── App.tsx       Landing page layout and content
+├── App.css       Landing page styles
+├── index.css     Global styles
+└── main.tsx      React entry point
+```
+
+The logo is imported from `../mobile/assets/motocarelogo.png`. Keep that asset
+path available when building the web app.
+
+## Related apps
+
+- [Mobile app](../mobile/README.md)
+- [Backend API](../server/README.md)

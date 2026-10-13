@@ -17,6 +17,7 @@ import { Button } from '../../../components/ui/Button';
 import { ServiceStatusBadge } from '../../../components/ui/ServiceStatusBadge';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { UpdateKmModal } from '../../../components/Bike/UpdateKmModal';
+import { DeleteBikeModal } from '../../../components/Bike/DeleteBikeModal';
 import { useTheme } from '../../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../../constants/theme';
 import { scheduleBikeReminders } from '../../../lib/reminderScheduler';
@@ -39,6 +40,8 @@ export default function BikeDashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [kmModalOpen, setKmModalOpen] = useState(false);
   const [kmSaving, setKmSaving] = useState(false);
@@ -121,33 +124,17 @@ export default function BikeDashboardScreen() {
     );
   };
 
-  // Delete bike handler
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Bike',
-      'This will permanently delete this bike and all its records.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-
-            try {
-              await api.bikes.delete(bikeId);
-              router.replace('/(tabs)/garage');
-            } catch (err: any) {
-              Alert.alert(
-                'Error',
-                err.response?.data?.message ?? 'Failed to delete bike'
-              );
-              setDeleting(false);
-            }
-          },
-        },
-      ]
-    );
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.bikes.delete(bikeId);
+      setDeleteOpen(false);
+      router.replace('/(tabs)/garage');
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.message ?? 'Failed to delete bike');
+      setDeleting(false);
+    }
   };
 
   // Render loading, error, or dashboard view
@@ -259,7 +246,14 @@ export default function BikeDashboardScreen() {
         <NavRow icon={<FileText size={18} color={colors.primary} strokeWidth={2.2} />} label="Documents" onPress={() => router.push({ pathname: '/bike/[id]/documents', params: { id: bikeId } })} colors={colors} />
 
         <View style={{ marginTop: Spacing.xl }}>
-          <Button label="Delete Bike" onPress={handleDelete} variant="danger" loading={deleting} />
+          <Button
+            label="Delete Bike"
+            onPress={() => {
+              setDeleteError(null);
+              setDeleteOpen(true);
+            }}
+            variant="danger"
+          />
         </View>
       </ScrollView>
       <UpdateKmModal
@@ -269,6 +263,14 @@ export default function BikeDashboardScreen() {
         serverError={kmError}
         onClose={() => setKmModalOpen(false)}
         onSubmit={handleKmSubmit}
+      />
+      <DeleteBikeModal
+        visible={deleteOpen}
+        bikeName={`${bike.brand} ${bike.model}`}
+        loading={deleting}
+        error={deleteError}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={confirmDelete}
       />
     </SafeAreaView>
   );
