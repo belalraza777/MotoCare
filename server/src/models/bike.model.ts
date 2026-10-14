@@ -26,7 +26,6 @@ const bikeSchema = new Schema<IBike>(
     model: { type: String, required: true },
     variant: String,
     registrationNumber: { type: String },
-    purchaseDate: { type: Date },
     fuelType: { type: String, enum: ['PETROL', 'ELECTRIC', 'DIESEL' , 'HYBRID'], required: true },
     currentKm: { type: Number, default: 0 },
     serviceIntervalKm: { type: Number, required: true },

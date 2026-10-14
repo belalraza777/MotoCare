@@ -10,16 +10,11 @@ export const createMaintenance = async (
     data: Partial<IMaintenance>
 ) => {
     // Ensures the bike exists AND belongs to this user before allowing writes to it
-    const bike = await getBikeById(userId, bikeId);
-
-    // Validate odometer reading: it cannot be less than the bike's currentKm
-    if (data.odometer !== undefined && data.odometer < bike.currentKm) {
-        throw new ApiError(400, 'Odometer reading cannot be less than the current Km of the bike');
-    }
+    await getBikeById(userId, bikeId);
 
     const maintenance = await Maintenance.create({ ...data, bikeId });
 
-    // Keep Bike.currentKm in sync — never let it fall behind a logged odometer reading
+    // Keep Bike.currentKm in sync when a newly logged reading is higher.
     if (data.odometer !== undefined) {
         await updateCurrentKm(bikeId, data.odometer);
     }
@@ -49,11 +44,7 @@ export const updateMaintenance = async (
     updates: Partial<IMaintenance>
 ) => {
 
-    const bike = await getBikeById(userId, bikeId);
-    // Validate odometer reading: it cannot be less than the bike's currentKm
-    if (updates.odometer !== undefined && updates.odometer < bike.currentKm) {
-        throw new ApiError(400, 'Odometer reading cannot be less than the current Km of the bike');
-    }
+    await getBikeById(userId, bikeId);
 
     // Find the existing maintenance record and update it
     const record = await getMaintenanceById(userId, bikeId, maintenanceId);

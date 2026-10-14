@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -113,17 +113,8 @@ export default function BikeDashboardScreen() {
       setKmSaving(false);
     }
   };
-  const handleKmSubmit = (km: number) => {
-    Alert.alert(
-      'Confirm odometer update',
-      `Set the odometer to ${km.toLocaleString()} km? This value can't be lowered later.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Save', onPress: () => saveKm(km) },
-      ]
-    );
-  };
 
+  // Delete bike handler
   const confirmDelete = async () => {
     setDeleting(true);
     setDeleteError(null);
@@ -262,7 +253,7 @@ export default function BikeDashboardScreen() {
         loading={kmSaving}
         serverError={kmError}
         onClose={() => setKmModalOpen(false)}
-        onSubmit={handleKmSubmit}
+        onSubmit={saveKm}
       />
       <DeleteBikeModal
         visible={deleteOpen}

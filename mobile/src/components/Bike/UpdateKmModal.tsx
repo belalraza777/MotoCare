@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { AlertTriangle, Gauge } from 'lucide-react-native';
+import { Modal, View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { AlertTriangle } from 'lucide-react-native';
 import { Button } from '../ui/Button';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
+
+const MAX_KM = 999999;
+const BIG_JUMP = 5000;
 
 interface UpdateKmModalProps {
   visible: boolean;
@@ -23,85 +17,75 @@ interface UpdateKmModalProps {
   onSubmit: (km: number) => void;
 }
 
-export function UpdateKmModal({
-  visible,
-  currentKm,
-  loading,
-  serverError,
-  onClose,
-  onSubmit,
-}: UpdateKmModalProps) {
+export function UpdateKmModal({ visible, currentKm, loading, serverError, onClose, onSubmit }: UpdateKmModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-
-  const [value, setValue] = useState('');
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [value, setValue] = useState(''); // State to hold the input value as a string
+  const [armed, setArmed] = useState(false); // State to track if the user has confirmed a risky update
 
   useEffect(() => {
     if (visible) {
       setValue(String(currentKm));
-      setLocalError(null);
+      setArmed(false);
     }
   }, [visible, currentKm]);
 
+  const onChange = (text: string) => {
+    setValue(text.replace(/[^0-9]/g, ''));
+    setArmed(false);
+  };
+
+  const hasValue = value !== ''; // Check if the input has a value
+  const km = Number(value); // Convert the input value to a number
+  const diff = km - currentKm; // Calculate the difference between the new value and the current value
+  const tooBig = hasValue && km > MAX_KM; // Check if the new value exceeds the maximum allowed value
+  const risky = hasValue && !tooBig && (diff < 0 || diff > BIG_JUMP); // Check if the new value is risky (either lower than current or a big jump)
+
+  let preview = ''; // Initialize the preview message
+  if (hasValue && !tooBig) {
+    if (diff === 0) preview = 'No change';
+    else if (diff > 0 && diff <= BIG_JUMP) preview = `+${diff.toLocaleString()} km`;
+    else if (diff > BIG_JUMP) preview = `+${diff.toLocaleString()} km at once. Please double-check this value.`;
+    else preview = `${Math.abs(diff).toLocaleString()} km LOWER. Use this only to correct a mistake.`;
+  }
+
   const handleSave = () => {
-    const km = Number(value);
-    if (value.trim() === '' || !Number.isInteger(km)) {
-      return setLocalError('Enter a whole number.');
-    }
-    if (km < currentKm) {
-      return setLocalError(`Can't be lower than ${currentKm.toLocaleString()} km.`);
-    }
-    if (km === currentKm) return onClose();
-    setLocalError(null);
+    if (!hasValue || tooBig) return;
+    if (diff === 0) return onClose();
+    if (risky && !armed) return setArmed(true);
     onSubmit(km);
   };
 
-  const error = localError ?? serverError;
+  const error = serverError ?? (tooBig ? `Max ${MAX_KM.toLocaleString()} km` : null);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={loading ? undefined : onClose} />
         <View style={styles.card}>
-          <View style={styles.header}>
-            <View style={styles.iconWrap}>
-              <Gauge size={22} color={colors.primary} strokeWidth={2.2} />
-            </View>
-            <View style={styles.headerText}>
-              <Text style={styles.title}>Update odometer</Text>
-              <Text style={styles.hint}>Keep your bike mileage up to date</Text>
-            </View>
-          </View>
+          <Text style={styles.title}>Update odometer</Text>
+          <Text style={styles.hint}>Current: {currentKm.toLocaleString()} km</Text>
 
-          <View style={styles.currentCard}>
-            <Text style={styles.currentLabel}>CURRENT READING</Text>
-            <Text style={styles.currentValue}>{currentKm.toLocaleString()} km</Text>
-          </View>
-
-          <View style={styles.warning}>
-            <AlertTriangle size={17} color={colors.warning} strokeWidth={2.2} />
-            <Text style={styles.warningText}>
-              Set this carefully. The odometer value cannot be lowered later.
+          <View style={styles.caution}>
+            <AlertTriangle size={16} color={colors.warning} strokeWidth={2.4} />
+            <Text style={styles.cautionText}>
+              Enter carefully. An incorrect KM reading can make service due dates and reminders inaccurate.
             </Text>
           </View>
 
-          <Text style={styles.inputLabel}>New odometer reading</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, risky && styles.inputRisky]}
             value={value}
-            onChangeText={setValue}
+            onChangeText={onChange}
             keyboardType="number-pad"
             placeholder="e.g. 8500"
             placeholderTextColor={colors.textMuted}
             autoFocus
             selectTextOnFocus
+            editable={!loading}
           />
 
+          {preview ? <Text style={[styles.preview, risky && styles.previewRisky]}>{preview}</Text> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           <View style={styles.actions}>
@@ -109,7 +93,13 @@ export function UpdateKmModal({
               <Button label="Cancel" variant="outline" onPress={onClose} disabled={loading} />
             </View>
             <View style={styles.actionBtn}>
-              <Button label="Save" onPress={handleSave} loading={loading} />
+              <Button
+                label={armed ? 'Confirm update' : 'Save'}
+                variant={armed ? 'danger' : 'primary'}
+                onPress={handleSave}
+                loading={loading}
+                disabled={!hasValue || tooBig}
+              />
             </View>
           </View>
         </View>
@@ -120,85 +110,33 @@ export function UpdateKmModal({
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    overlay: {
-      flex: 1,
-      justifyContent: 'center',
-      padding: Spacing.lg,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    card: {
-      backgroundColor: colors.card,
-      borderRadius: Radius.lg,
-      padding: Spacing.xl,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg },
-    iconWrap: {
-      width: 44,
-      height: 44,
-      borderRadius: Radius.md,
-      backgroundColor: colors.primarySoft,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerText: { flex: 1, marginLeft: Spacing.md },
-    title: {
-      fontSize: Typography.size.lg,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-    },
-    hint: {
-      fontSize: Typography.size.sm,
-      color: colors.textMuted,
-      marginTop: 3,
-    },
-    currentCard: {
-      backgroundColor: colors.surface,
-      borderRadius: Radius.md,
-      padding: Spacing.md,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: Spacing.md,
-    },
-    currentLabel: {
-      fontSize: Typography.size.xs,
-      fontWeight: Typography.weight.semibold,
-      color: colors.textMuted,
-      letterSpacing: 0.8,
-    },
-    currentValue: {
-      fontSize: Typography.size.xl,
-      fontWeight: Typography.weight.bold,
-      color: colors.text,
-      marginTop: 3,
-    },
-    warning: {
+    overlay: { flex: 1, justifyContent: 'center', padding: Spacing.lg, backgroundColor: 'rgba(0,0,0,0.5)' },
+    card: { backgroundColor: colors.card, borderRadius: Radius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: colors.border },
+    title: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
+    hint: { fontSize: Typography.size.sm, color: colors.textMuted, marginTop: 2 },
+    caution: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
-      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      gap: Spacing.sm,
+      backgroundColor: colors.warning + '22',
       borderRadius: Radius.sm,
-      padding: Spacing.sm,
-      marginBottom: Spacing.md,
+      padding: Spacing.sm + 2,
+      marginVertical: Spacing.md,
     },
-    warningText: { flex: 1, fontSize: Typography.size.sm, color: colors.text, marginLeft: Spacing.sm, lineHeight: 20 },
-    inputLabel: {
-      fontSize: Typography.size.sm,
-      fontWeight: Typography.weight.semibold,
-      color: colors.text,
-      marginBottom: Spacing.sm,
-    },
+    cautionText: { flex: 1, fontSize: Typography.size.xs + 1, color: colors.text, lineHeight: 18 },
     input: {
       borderWidth: 1,
-      borderColor: colors.primary,
-      borderRadius: Radius.md,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.md + 2,
-      fontSize: Typography.size.xl,
+      borderColor: colors.border,
+      borderRadius: Radius.sm,
+      padding: Spacing.md,
+      fontSize: Typography.size.lg,
       fontWeight: Typography.weight.semibold,
       color: colors.text,
       backgroundColor: colors.surface,
     },
+    inputRisky: { borderColor: colors.warning },
+    preview: { fontSize: Typography.size.sm, color: colors.textSecondary, marginTop: Spacing.sm },
+    previewRisky: { color: colors.warning, fontWeight: Typography.weight.semibold },
     error: { color: colors.error, fontSize: Typography.size.sm, marginTop: Spacing.sm },
     actions: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.lg },
     actionBtn: { flex: 1 },

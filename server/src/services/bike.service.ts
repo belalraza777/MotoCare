@@ -32,13 +32,6 @@ export const getBikeById = async (userId: string, bikeId: string) => {
 export const updateBike = async (userId: string, bikeId: string, updates: any) => {
   const bike = await getBikeById(userId, bikeId);
 
-  // enforce currentKm rule: never allow it to move backwards
-  if (updates.currentKm !== undefined) {
-    if (updates.currentKm < bike.currentKm) {
-      throw new ApiError(400, `currentKm cannot be less than existing value (${bike.currentKm})`);
-    }
-  }
-
   Object.assign(bike, updates);
   await bike.save();
   return bike;
@@ -60,10 +53,6 @@ export const deleteBike = async (userId: string, bikeId: string) => {
 export const updateCurrentKm = async (bikeId: Types.ObjectId | string, odometer: number) => {
   const bike = await Bike.findById(bikeId);
   if (!bike) throw new ApiError(404, 'Bike not found');
-
-  if (odometer < bike.currentKm) {
-    throw new ApiError(400, `Odometer (${odometer}) cannot be less than bike's current KM (${bike.currentKm})`);
-  }
 
   if (odometer > bike.currentKm) {
     bike.currentKm = odometer;

@@ -12,7 +12,7 @@ const formatType = (value: string) => value.replace(/_/g, ' ').toLowerCase();
 
 interface LogCardProps {
   item: LogItem;
-  onPress: (item: LogItem) => void;
+  onPress?: (item: LogItem) => void;
 }
 
 export const LogCard = memo(function LogCard({ item, onPress }: LogCardProps) {
@@ -37,8 +37,8 @@ export const LogCard = memo(function LogCard({ item, onPress }: LogCardProps) {
     subtitle = item.serviceId ? 'Included in service' : 'Maintenance';
   }
 
-  return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.85}>
+  const content = (
+    <>
       {/* Full-width bike name header — can never be overlapped */}
       <View style={styles.bikeRow}>
         <Bike size={13} color={colors.primary} strokeWidth={2.5} />
@@ -76,7 +76,15 @@ export const LogCard = memo(function LogCard({ item, onPress }: LogCardProps) {
           </Text>
         </View>
       </View>
+    </>
+  );
+
+  return onPress ? (
+    <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.85}>
+      {content}
     </TouchableOpacity>
+  ) : (
+    <View style={styles.card}>{content}</View>
   );
 });
 

@@ -105,18 +105,10 @@ export default function LogsScreen() {
 
   const openLog = useCallback(
     (item: LogItem) => {
-      if (item.kind === 'FUEL') {
-        router.push({ pathname: '/bike/[id]/fuel/[fuelId]/edit', params: { id: item.bikeId, fuelId: item._id } });
-      } else if (item.kind === 'SERVICE') {
+      if (item.kind === 'SERVICE') {
         router.push({ pathname: '/bike/[id]/service/[serviceId]', params: { id: item.bikeId, serviceId: item._id } });
       } else if (item.serviceId) {
-        // service ka hissa hai: service kholo, taaki service ka total sahi rahe
         router.push({ pathname: '/bike/[id]/service/[serviceId]', params: { id: item.bikeId, serviceId: item.serviceId } });
-      } else {
-        router.push({
-          pathname: '/bike/[id]/maintenance/[maintenanceId]/edit',
-          params: { id: item.bikeId, maintenanceId: item._id },
-        });
       }
     },
     [router]
@@ -137,7 +129,12 @@ export default function LogsScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => `${item.kind}-${item._id}`}
-        renderItem={({ item }) => <LogCard item={item} onPress={openLog} />}
+        renderItem={({ item }) => (
+          <LogCard
+            item={item}
+            onPress={item.kind === 'SERVICE' || Boolean(item.serviceId) ? openLog : undefined}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
