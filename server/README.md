@@ -56,6 +56,24 @@ npm start
 The production process connects to MongoDB before opening the HTTP port. A
 database connection failure causes startup to fail.
 
+## Docker
+
+Build the production image from the repository root:
+
+```bash
+docker build -t motocare-backend ./server
+```
+
+Run the container and provide the required secrets:
+
+```bash
+docker run --rm -p 8000:8000 -e MONGODB_URI="your_mongodb_uri" -e CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key" -e CLERK_SECRET_KEY="your_clerk_secret_key" motocare-backend
+```
+
+The image exposes port `8000` and includes a Docker health check for
+`GET /health`. Do not copy `.env` files into the image or bake secrets into
+the Dockerfile; provide them through the deployment platform.
+
 ## Health check
 
 The unauthenticated health endpoint is:
