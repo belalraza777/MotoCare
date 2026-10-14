@@ -34,9 +34,9 @@ function AppContent() {
 export default function RootLayout() {
 
   // Register for push notifications when the component mounts.
-  // useEffect(() => {
-  //   registerForNotificationsAsync();
-  // }, []);
+  useEffect(() => {
+    registerForNotificationsAsync();
+  }, []);
 
   return (
     <SafeAreaProvider>

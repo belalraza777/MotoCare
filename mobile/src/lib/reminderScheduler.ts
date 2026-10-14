@@ -1,7 +1,7 @@
 import { scheduleReminder } from './notifications';
 import { BikeDashboard } from '../types/dashboard.types';
 
-const DAYS_BEFORE_EXPIRY = 5;
+const DAYS_BEFORE_EXPIRY = 10;
 
 function documentLabel(doc: BikeDashboard['documents'][number]) {
   return doc.type === 'OTHER' ? doc.title ?? 'Document' : doc.type;
