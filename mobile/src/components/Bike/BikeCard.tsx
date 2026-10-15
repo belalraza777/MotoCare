@@ -1,5 +1,6 @@
+
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronRight, Fuel } from 'lucide-react-native';
+import { ChevronRight, Fuel, Gauge } from 'lucide-react-native';
 import { Bike } from '../../types/bike.types';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
@@ -16,26 +17,69 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
   const styles = createStyles(colors);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      {/* Icon tile stands in for a bike photo until image upload is built */}
-      <View style={styles.iconTile}>
-        <BikeIcon width={46} height={46} fill={colors.primary} />
-      </View>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      {/* Bike identity and navigation */}
+      <View style={styles.header}>
+        <View style={styles.iconTile}>
+          <BikeIcon width={48} height={48} fill={colors.primary} />
+        </View>
 
-      <View style={styles.info}>
-        <Text style={styles.name}>{item.brand} {item.model}</Text>
-        {item.variant ? <Text style={styles.variant}>{item.variant}</Text> : null}
-        <View style={styles.meta}>
-          <Text style={styles.metaLabel}>Odometer</Text>
-          <Text style={styles.metaText}>{item.currentKm.toLocaleString()} km</Text>
-          <Text style={styles.metaDot}>•</Text>
-          <Fuel color={colors.textMuted} size={14} strokeWidth={2} />
-          <Text style={styles.metaText}>{item.fuelType}</Text>
+        <View style={styles.info}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.brand} {item.model}
+          </Text>
+
+          {item.variant ? (
+            <Text style={styles.variant} numberOfLines={1}>
+              {item.variant}
+            </Text>
+          ) : null}
+        </View>
+
+        <View style={styles.arrowButton}>
+          <ChevronRight
+            color={colors.primary}
+            size={20}
+            strokeWidth={2.2}
+          />
         </View>
       </View>
 
-      <View style={styles.chevronCircle}>
-        <ChevronRight color={colors.primary} size={18} strokeWidth={2.4} />
+      {/* Separate the bike details from its identity */}
+      <View style={styles.divider} />
+
+      <View style={styles.details}>
+        <View style={styles.detailItem}>
+          <View style={styles.detailIcon}>
+            <Gauge size={17} color={colors.primary} strokeWidth={2} />
+          </View>
+
+          <View style={styles.detailInfo}>
+            <Text style={styles.detailLabel}>ODOMETER</Text>
+            <Text style={styles.detailValue} numberOfLines={1}>
+              {item.currentKm.toLocaleString()} km
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.verticalDivider} />
+
+        <View style={styles.detailItem}>
+          <View style={styles.detailIcon}>
+            <Fuel size={17} color={colors.primary} strokeWidth={2} />
+          </View>
+
+          <View style={styles.detailInfo}>
+            <Text style={styles.detailLabel}>FUEL TYPE</Text>
+            <Text style={styles.detailValue} numberOfLines={1}>
+              {item.fuelType}
+            </Text>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -44,46 +88,114 @@ export function BikeCard({ item, onPress }: BikeCardProps) {
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
-      flexDirection: 'row',
-      alignItems: 'center',
       backgroundColor: colors.card,
       borderRadius: Radius.xl,
-      padding: Spacing.lg,
-      marginBottom: Spacing.md,
       borderWidth: 1,
       borderColor: colors.border,
+      padding: Spacing.lg,
+      marginBottom: Spacing.md,
       shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
-      shadowRadius: 10,
-      elevation: 3,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      elevation: 2,
     },
+
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
     iconTile: {
       width: 72,
       height: 72,
       borderRadius: Radius.lg,
       backgroundColor: colors.primarySoft,
-      justifyContent: 'center',
       alignItems: 'center',
-      marginRight: Spacing.lg,
-      borderWidth: 1,
-      borderColor: colors.primary + '35',
+      justifyContent: 'center',
+      marginRight: Spacing.md,
     },
-    info: { flex: 1 },
-    name: { fontSize: Typography.size.lg, fontWeight: Typography.weight.bold, color: colors.text },
-    variant: { fontSize: Typography.size.sm, color: colors.textSecondary, marginTop: 3 },
-    meta: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.xs + 2, marginTop: Spacing.sm },
-    metaLabel: { fontSize: Typography.size.xs, color: colors.textMuted },
-    metaText: { fontSize: Typography.size.xs, color: colors.textSecondary, fontWeight: Typography.weight.semibold },
-    metaDot: { fontSize: Typography.size.xs, color: colors.textMuted },
-    chevronCircle: {
+
+    info: {
+      flex: 1,
+      minWidth: 0,
+      justifyContent: 'center',
+    },
+
+    name: {
+      fontSize: Typography.size.lg,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+    },
+
+    variant: {
+      fontSize: Typography.size.sm,
+      color: colors.textSecondary,
+      marginTop: 5,
+    },
+
+    arrowButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: Spacing.sm,
+    },
+
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.border,
+      marginVertical: Spacing.md,
+    },
+
+    details: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    detailItem: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      minWidth: 0,
+      gap: Spacing.sm,
+    },
+
+    detailIcon: {
       width: 34,
       height: 34,
-      borderRadius: 17,
+      borderRadius: Radius.md,
+      backgroundColor: colors.primarySoft,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.primarySoft,
-      marginLeft: Spacing.sm,
+    },
+
+    detailInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
+
+    detailLabel: {
+      fontSize: 10,
+      fontWeight: Typography.weight.medium,
+      color: colors.textMuted,
+      letterSpacing: 0.6,
+    },
+
+    detailValue: {
+      fontSize: Typography.size.sm,
+      fontWeight: Typography.weight.semibold,
+      color: colors.text,
+      marginTop: 3,
+    },
+
+    verticalDivider: {
+      width: StyleSheet.hairlineWidth,
+      height: 34,
+      backgroundColor: colors.border,
+      marginHorizontal: Spacing.md,
     },
   });
 }

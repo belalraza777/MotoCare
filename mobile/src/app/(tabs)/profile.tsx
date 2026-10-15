@@ -8,9 +8,9 @@ import { Moon, Sun, Pencil, Check, X, LogOut, Bike, Sparkles } from 'lucide-reac
 import { useApiClient } from '../../api/client';
 import { Avatar } from '../../components/ui/Avatar';
 import { AppFooter } from '../../components/ui/AppFooter';
+import { NotificationSettings } from '../../components/ui/NotificationSettings';
 import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, Typography, ThemeColors } from '../../constants/theme';
-
 export default function ProfileScreen() {
   const { signOut } = useAuth();
   const { user } = useUser();
@@ -34,7 +34,11 @@ export default function ProfileScreen() {
     }
   }, [api]);
 
-  useFocusEffect(useCallback(() => { loadBikeCount(); }, [loadBikeCount]));
+  useFocusEffect(
+    useCallback(() => {
+      loadBikeCount();
+    }, [loadBikeCount])
+  );
 
   const startEdit = () => {
     setFirstName(user?.firstName ?? '');
@@ -148,6 +152,8 @@ export default function ProfileScreen() {
           />
         </View>
         </View>
+
+        <NotificationSettings />
 
         <TouchableOpacity style={styles.signOutRow} onPress={() => signOut()}>
           <LogOut size={18} color={colors.error} strokeWidth={2.2} />

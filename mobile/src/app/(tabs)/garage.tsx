@@ -128,7 +128,6 @@ export default function GarageScreen() {
                       {bikes.length} {bikes.length === 1 ? 'bike' : 'bikes'} ready to ride
                     </Text>
                   </View>
-                  <Text style={styles.heroStatCount}>{bikes.length}</Text>
                 </View>
                 </LinearGradient>
 

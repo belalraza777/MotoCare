@@ -7,12 +7,11 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { registerForNotificationsAsync } from '../lib/notifications';
 
-
-// The publishable key for Clerk is retrieved from environment variables.
+// Load the Clerk key from the environment variables.
 const publishableKey =
   process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
-// AppContent component handles the main content of the app, including the status bar and navigation stack.
+// Sets up the status bar and navigation using the current theme.
 function AppContent() {
   const { isDark } = useTheme();
 
@@ -30,13 +29,12 @@ function AppContent() {
   );
 }
 
-// RootLayout component is the main layout for the app, wrapping the content with necessary providers and handling notifications.
+// Sets up the providers required by the entire app.
 export default function RootLayout() {
-
-  // Register for push notifications when the component mounts.
-  // useEffect(() => {
-  //   registerForNotificationsAsync();
-  // }, []);
+  // Register for notification permissions when the app layout mounts.
+  useEffect(() => {
+    registerForNotificationsAsync();
+  }, []);
 
   return (
     <SafeAreaProvider>

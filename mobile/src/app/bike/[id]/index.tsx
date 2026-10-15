@@ -71,15 +71,15 @@ export default function BikeDashboardScreen() {
         data.serviceDue.nextDueKm,
       ].join('|');
 
-      // if (lastScheduledFor.current !== reminderKey) {
-      //   scheduleBikeReminders(data)
-      //     .then(() => {
-      //       lastScheduledFor.current = reminderKey;
-      //     })
-      //     .catch((notificationError) => {
-      //       console.error('Failed to schedule bike reminders', notificationError);
-      //     });
-      // }
+      if (lastScheduledFor.current !== reminderKey) {
+        scheduleBikeReminders(data)
+          .then(() => {
+            lastScheduledFor.current = reminderKey;
+          })
+          .catch((notificationError) => {
+            console.error('Failed to schedule bike reminders', notificationError);
+          });
+      }
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to load dashboard');
     } finally {
@@ -150,7 +150,7 @@ export default function BikeDashboardScreen() {
         }
       >
         <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.headerInfo}>
             <Text style={styles.bikeName}>{bike.brand} {bike.model}</Text>
             {bike.variant ? <Text style={styles.bikeVariant}>{bike.variant}</Text> : null}
             {bike.registrationNumber ? <Text style={styles.regNumber}>{bike.registrationNumber}</Text> : null}
@@ -190,18 +190,33 @@ export default function BikeDashboardScreen() {
             }}
           >
             <View style={styles.statValueRow}>
-              <Text style={styles.statValue}>{bike.currentKm.toLocaleString()}</Text>
-              <Pencil size={12} color={colors.primary} strokeWidth={2.4} />
+              <Text
+                style={styles.currentKmValue}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+              >
+                {bike.currentKm.toLocaleString()} <Text style={styles.currentKmUnit}>KM</Text>
+              </Text>
             </View>
             <Text style={styles.statLabel}>Current KM</Text>
-            <Text style={styles.statAction}>Tap to edit</Text>
+            <View style={styles.statActionRow}>
+              <Text style={styles.statAction} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                Tap to update
+              </Text>
+              <Pencil size={11} color={colors.primary} strokeWidth={2.4} />
+            </View>
           </TouchableOpacity>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>₹{expenses.thisMonth.toLocaleString()}</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+              ₹{expenses.thisMonth.toLocaleString()}
+            </Text>
             <Text style={styles.statLabel}>This Month</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>₹{expenses.total.toLocaleString()}</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+              ₹{expenses.total.toLocaleString()}
+            </Text>
             <Text style={styles.statLabel}>Total Spend</Text>
           </View>
         </View>
@@ -210,8 +225,8 @@ export default function BikeDashboardScreen() {
           <>
             <Text style={styles.sectionTitle}>Documents</Text>
             <View style={styles.docsCard}>
-              {documents.map((doc) => (
-                <View key={doc._id} style={styles.docRow}>
+              {documents.map((doc, index) => (
+                <View key={doc._id} style={[styles.docRow, index < documents.length - 1 && styles.docRowBorder]}>
                   <View style={styles.documentInfo}>
                     <Text style={styles.docLabel}>
                       {doc.type === 'OTHER' ? doc.title : doc.type}
@@ -236,7 +251,7 @@ export default function BikeDashboardScreen() {
         <NavRow icon={<Fuel size={18} color={colors.primary} strokeWidth={2.2} />} label="Fuel" onPress={() => router.push({ pathname: '/bike/[id]/fuel', params: { id: bikeId } })} colors={colors} />
         <NavRow icon={<FileText size={18} color={colors.primary} strokeWidth={2.2} />} label="Documents" onPress={() => router.push({ pathname: '/bike/[id]/documents', params: { id: bikeId } })} colors={colors} />
 
-        <View style={{ marginTop: Spacing.xl }}>
+        <View style={styles.deleteSection}>
           <Button
             label="Delete Bike"
             onPress={() => {
@@ -293,9 +308,10 @@ function NavRow({
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background },
-    content: { padding: Spacing.lg, paddingBottom: 40 },
+    content: { padding: Spacing.lg, paddingTop: Spacing.md, paddingBottom: 56 },
 
-    headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: Spacing.lg },
+    headerRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: Spacing.xl },
+    headerInfo: { flex: 1, paddingRight: Spacing.md },
     bikeName: { fontSize: Typography.size.xxl, fontWeight: Typography.weight.bold, color: colors.text, letterSpacing: -0.3 },
     bikeVariant: { fontSize: Typography.size.md, color: colors.textSecondary, marginTop: 2 },
     regNumber: { fontSize: Typography.size.sm, color: colors.textMuted, marginTop: 4, letterSpacing: 0.5 },
@@ -316,7 +332,8 @@ function createStyles(colors: ThemeColors) {
       padding: Spacing.lg,
       marginBottom: Spacing.lg,
       borderWidth: 1,
-      borderColor: colors.primarySoft,
+      borderColor: colors.primary,
+      borderLeftWidth: 4,
     },
     serviceBannerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     serviceBannerLabel: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: colors.primary, letterSpacing: 0.3 },
@@ -324,16 +341,49 @@ function createStyles(colors: ThemeColors) {
     serviceDueKm: { fontSize: Typography.size.xs + 1, color: colors.textSecondary, marginTop: 2 },
 
     statsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.xl },
-    statBox: { flex: 1, backgroundColor: colors.card, borderRadius: Radius.md, padding: Spacing.md, borderWidth: 1, borderColor: colors.border },
-    statValueRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    statValue: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text },
-    statLabel: { fontSize: Typography.size.xs, color: colors.textMuted, marginTop: 2, letterSpacing: 0.3 },
-    statAction: { fontSize: Typography.size.xs, color: colors.primary, marginTop: Spacing.xs, fontWeight: Typography.weight.semibold },
+    statBox: {
+      flex: 1,
+      minHeight: 88,
+      justifyContent: 'center',
+      backgroundColor: colors.card,
+      borderRadius: Radius.md,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    statValueRow: { alignItems: 'center' },
+    currentKmValue: {
+      maxWidth: '100%',
+      fontSize: Typography.size.lg,
+      fontWeight: Typography.weight.bold,
+      color: colors.text,
+      textAlign: 'center',
+      flexShrink: 1,
+    },
+    currentKmUnit: { fontSize: Typography.size.xs, fontWeight: Typography.weight.semibold, color: colors.textSecondary },
+    statValue: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text, textAlign: 'center' },
+    statLabel: { fontSize: Typography.size.xs, color: colors.textMuted, marginTop: 4, letterSpacing: 0.2, textAlign: 'center' },
+    statActionRow: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 3,
+      marginTop: Spacing.xs,
+    },
+    statAction: {
+      flexShrink: 1,
+      fontSize: Typography.size.xs,
+      color: colors.primary,
+      fontWeight: Typography.weight.semibold,
+    },
 
     sectionTitle: { fontSize: Typography.size.md, fontWeight: Typography.weight.semibold, color: colors.text, marginBottom: Spacing.sm, marginTop: Spacing.sm },
 
     docsCard: { backgroundColor: colors.card, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.lg, borderWidth: 1, borderColor: colors.border },
-    docRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.xs + 2 },
+    docRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.sm },
+    docRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
     documentInfo: { flex: 1 },
     docLabel: { fontSize: Typography.size.sm, color: colors.text, textTransform: 'capitalize' },
     documentExpiry: { fontSize: Typography.size.xs, color: colors.textMuted, marginTop: 2 },
@@ -359,5 +409,6 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
     },
     navRowText: { fontSize: Typography.size.md, color: colors.text, fontWeight: Typography.weight.medium },
+    deleteSection: { marginTop: Spacing.xl },
   });
 }

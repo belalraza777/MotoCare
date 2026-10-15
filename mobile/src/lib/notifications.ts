@@ -1,8 +1,8 @@
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { Linking, Platform } from 'react-native';
 
-// Show alerts even while the app is open, not just backgrounded
+// Allows notifications to appear even when the app is open.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -13,56 +13,96 @@ Notifications.setNotificationHandler({
   }),
 });
 
-let registrationPromise: Promise<boolean> | null = null;
+export type NotificationPermissionState =
+  | 'granted'
+  | 'denied'
+  | 'undetermined'
+  | 'unavailable';
 
-async function registerNotifications(): Promise<boolean> {
-  if (!Device.isDevice) return false; // simulators can't reliably receive local notifications
+const NOTIFICATION_CHANNEL_ID = 'default';
 
-  // Android requires a channel before its notification permission prompt can
-  // be shown on Android 13 and later.
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.DEFAULT,
-    });
-  }
+// Shares the same permission request if multiple calls happen together.
+let permissionRequest: Promise<boolean> | null = null;
 
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  let finalStatus = existing;
+// Android requires a notification channel before showing notifications.
+async function createAndroidChannel() {
+  if (Platform.OS !== 'android') return;
 
-  if (existing !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  return finalStatus === 'granted';
+  await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL_ID, {
+    name: 'default',
+    importance: Notifications.AndroidImportance.DEFAULT,
+  });
 }
 
-// Asks once; safe to call repeatedly — no-ops if already granted/denied.
-// Sharing the in-flight promise also prevents scheduling from racing the
-// permission request during the initial app render.
+async function requestNotificationPermission(): Promise<boolean> {
+  // Skip notification requests when running in a simulator or emulator.
+  if (!Device.isDevice) return false;
+
+  await createAndroidChannel();
+
+  // Check whether permission has already been granted.
+  const { status: currentStatus } = await Notifications.getPermissionsAsync();
+  if (currentStatus === 'granted') return true;
+
+  // Ask the user for permission if it has not been granted yet.
+  const { status: requestedStatus } =
+    await Notifications.requestPermissionsAsync();
+
+  return requestedStatus === 'granted';
+}
+
+/**
+ * Requests notification permission without opening duplicate dialogs.
+ *
+ * Multiple calls share the same promise while a request is in progress.
+ */
 export function registerForNotificationsAsync(): Promise<boolean> {
-  if (!registrationPromise) {
-    registrationPromise = registerNotifications();
-    registrationPromise.catch(() => {
-      registrationPromise = null;
+  if (!permissionRequest) {
+    permissionRequest = requestNotificationPermission().finally(() => {
+      // Allow a new request after the current one finishes.
+      permissionRequest = null;
     });
   }
 
-  return registrationPromise;
+  return permissionRequest;
 }
 
-// Schedules a one-time alert at a given date. Reusing the same id replaces
-// any existing schedule for it, so calling this again is always safe.
+export async function getNotificationPermissionStatus(): Promise<NotificationPermissionState> {
+  // Permission status is unavailable on simulators and emulators.
+  if (!Device.isDevice) return 'unavailable';
+
+  const { status } = await Notifications.getPermissionsAsync();
+
+  if (status === 'granted') return 'granted';
+  if (status === 'denied') return 'denied';
+
+  return 'undetermined';
+}
+
+// Opens system settings so the user can change notification permissions.
+export async function openSystemNotificationSettings(): Promise<void> {
+  await Linking.openSettings();
+}
+
+/**
+ * Schedules a local notification for the given date.
+ *
+ * Past dates are ignored, and the identifier allows an existing
+ * scheduled notification with the same ID to be replaced.
+ */
 export async function scheduleReminder(
   id: string,
   title: string,
   body: string,
   triggerDate: Date
-) {
-  if (triggerDate.getTime() <= Date.now()) return; // skip past dates
+): Promise<void> {
+  // Do not schedule reminders for dates that have already passed.
+  if (triggerDate.getTime() <= Date.now()) return;
 
-  if (!(await registerForNotificationsAsync())) {
+  const notificationsEnabled = await registerForNotificationsAsync();
+
+  // Stop if notification permission is unavailable or denied.
+  if (!notificationsEnabled) {
     console.warn('Notifications are not enabled; skipping reminder:', id);
     return;
   }
@@ -77,7 +117,7 @@ export async function scheduleReminder(
   });
 }
 
-// Cancels a scheduled alert by id. No-op if no such alert exists.
-export async function cancelReminder(id: string) {
+// Cancels a previously scheduled notification using its identifier.
+export async function cancelReminder(id: string): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(id);
 }

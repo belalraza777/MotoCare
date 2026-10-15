@@ -3,16 +3,17 @@ import { BikeDashboard } from '../types/dashboard.types';
 
 const DAYS_BEFORE_EXPIRY = 10;
 
+// Returns a readable name for each document type.
 function documentLabel(doc: BikeDashboard['documents'][number]) {
   return doc.type === 'OTHER' ? doc.title ?? 'Document' : doc.type;
 }
 
-// Covers both cases: documents about to expire (counts down to real date)
-// and documents already expired (fires now, since there's no future date left)
+// Schedules reminders for documents that are expired or expiring soon.
 async function scheduleDocumentReminders(dashboard: BikeDashboard) {
   for (const doc of dashboard.documents) {
     const label = documentLabel(doc);
 
+    // Notify the user immediately if the document has already expired.
     if (doc.status === 'expired') {
       await scheduleReminder(
         `doc-expired-${doc._id}`,
@@ -23,6 +24,7 @@ async function scheduleDocumentReminders(dashboard: BikeDashboard) {
       continue;
     }
 
+    // Schedule the reminder 10 days before the expiry date.
     const reminderDate = new Date(doc.expiryDate);
     reminderDate.setDate(reminderDate.getDate() - DAYS_BEFORE_EXPIRY);
 
@@ -35,17 +37,20 @@ async function scheduleDocumentReminders(dashboard: BikeDashboard) {
   }
 }
 
-// Km-based, not date-based — no real future date exists, so this fires
-// immediately whenever the dashboard loads and the bike is due/overdue
+// Schedules a reminder when the bike's service is due or overdue.
 async function scheduleServiceReminder(dashboard: BikeDashboard) {
   const { bike, serviceDue } = dashboard;
+
+  // No reminder is needed while the bike's service is on track.
   if (serviceDue.status === 'normal') return;
 
+  // Create a message based on how urgently the service is needed.
   const body =
     serviceDue.status === 'overdue'
       ? `${bike.brand} ${bike.model} is overdue for service.`
       : `${bike.brand} ${bike.model} is due for service in ${serviceDue.remainingKm} km.`;
 
+  // Show the service reminder shortly after it is scheduled.
   await scheduleReminder(
     `service-${bike._id}`,
     serviceDue.status === 'overdue' ? 'Service Overdue' : 'Service Due Soon',
@@ -54,6 +59,7 @@ async function scheduleServiceReminder(dashboard: BikeDashboard) {
   );
 }
 
+// Schedules all document and service reminders for the selected bike.
 export async function scheduleBikeReminders(dashboard: BikeDashboard) {
   await scheduleDocumentReminders(dashboard);
   await scheduleServiceReminder(dashboard);
