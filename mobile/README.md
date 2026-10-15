@@ -1,165 +1,257 @@
 # MotoCare Mobile
 
-The MotoCare mobile app is an Expo and React Native client for managing
-motorcycles, maintenance, fuel, service history, and vehicle documents.
+MotoCare is a mobile app for keeping track of a motorcycle:
 
-## Requirements
+- bikes in your garage
+- maintenance and service history
+- fuel purchases
+- insurance, PUC, RC, and other documents
+- reminders and light/dark mode
+
+This folder contains the **mobile app**. It is built with **Expo**, which is a
+toolkit that makes React Native apps easier to run on Android and iOS.
+
+## Before you start
+
+You need:
 
 - Node.js 20 or newer
-- npm
-- An Android emulator, iOS simulator, or physical device
-- A running MotoCare API (see [`../server/README.md`](../server/README.md))
-- A Clerk application with a mobile publishable key
+- npm (installed with Node.js)
+- a Clerk application and its mobile publishable key
+- the MotoCare API running locally
+- one of these:
+  - Android Studio and an Android emulator
+  - macOS with Xcode and an iOS simulator
+  - a physical phone
 
-For iOS development, use macOS with Xcode installed. Android development
-requires Android Studio and an Android SDK.
+The API setup is documented in
+[`../server/README.md`](../server/README.md).
 
-## Installation
+> iOS apps can only be built locally on macOS. Android development works on
+> Windows, macOS, and Linux.
 
-From this directory:
+## 1. Install the mobile app
+
+Open a terminal in this folder:
 
 ```bash
+cd mobile
 npm install
 ```
 
-Create a local `.env` file:
+`npm install` reads [`package.json`](./package.json) and downloads the
+libraries used by the app. Run it again after pulling changes that update
+`package.json` or `package-lock.json`.
+
+## 2. Add environment variables
+
+Create a file named `.env` directly inside the `mobile` folder:
 
 ```env
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key
 EXPO_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
-The API URL must be reachable from the device. If
-`EXPO_PUBLIC_API_URL` is omitted, the client uses
-`http://192.168.1.13:8000/api` as its development fallback:
+What these values mean:
 
-- Android emulator: set `EXPO_PUBLIC_API_URL` to
-  `http://10.0.2.2:8000/api` for an API running on the host machine.
-- iOS simulator: `http://localhost:8000/api` usually works.
-- Physical device: use the host computer's LAN IP, for example
-  `http://192.168.1.10:8000/api`.
+- `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` connects the app to your Clerk login
+  project.
+- `EXPO_PUBLIC_API_URL` tells the app where the MotoCare backend is running.
 
-Never commit `.env` or real credentials. Local environment files are ignored by
-Git.
+Do not commit `.env`, Clerk secrets, or any real credentials. `.env` is ignored
+by Git.
 
-## Development
+### Choosing the API URL
 
-Start the Expo development server:
+The correct URL depends on where the app is running:
+
+| App is running on | API running on the development computer | Use |
+| --- | --- | --- |
+| Android emulator | Same computer | `http://10.0.2.2:8000/api` |
+| iOS simulator | Same computer | `http://localhost:8000/api` |
+| Physical phone | Same Wi-Fi network | `http://YOUR_COMPUTER_IP:8000/api` |
+
+For a physical phone, replace `YOUR_COMPUTER_IP` with your computer's LAN IP,
+for example `http://192.168.1.10:8000/api`. The phone and computer must be on
+the same network, and the backend must allow connections from that network.
+
+Restart Expo after changing `.env`.
+
+## 3. Start the backend
+
+In a second terminal, start the server by following
+[`../server/README.md`](../server/README.md).
+
+Keep that terminal running. The mobile app sends login and motorcycle data to
+this server.
+
+## 4. Start the Expo development server
+
+In the `mobile` folder, run:
 
 ```bash
 npm start
 ```
 
-Then choose a target from the Expo CLI, or use one of the platform commands:
+Expo will show a menu in the terminal. Use the menu to open the app, or run
+one of these commands directly:
 
 ```bash
-npm run android
-npm run ios
-npm run web
+npm run android   # open on Android
+npm run ios       # open on iOS (macOS only)
+npm run web       # open the web version
 ```
 
-The app uses Expo Router. If a native module is added or changed, use a
-development build rather than relying on Expo Go:
+You can also press the displayed keyboard shortcut, such as `a` for Android,
+when Expo is running.
 
-```bash
-npx expo run:android
-npx expo run:ios
-```
+## A simple React Native explanation
 
-## Quality checks
-
-Run linting and type checking before submitting changes:
-
-```bash
-npm run lint
-npx tsc --noEmit
-```
-
-## Features
-
-- Clerk sign-up, sign-in, and session management
-- Motorcycle garage management
-- Motorcycle dashboard and details
-- Maintenance records and reminders
-- Fuel tracking
-- Service history
-- Vehicle document tracking
-- Light and dark themes
-- Local reminder notifications
-
-## Project structure
+If you are new to React Native, these are the folders you will use most:
 
 ```text
 src/
-├── api/                  API clients for bikes and vehicle records
-├── app/                  Expo Router screens and layouts
-│   ├── (auth)/           Authentication screens
-│   ├── (tabs)/           Main tab navigation
-│   └── bike/             Bike details and record screens
-├── components/           Reusable UI and feature components
-├── constants/            Shared theme and app constants
-├── context/              React context providers
-├── hooks/                Shared React hooks
-├── lib/                  Notifications and reminder scheduling
-└── types/                API and domain TypeScript types
+├── app/          Screens and routes (Expo Router)
+├── components/   Reusable UI, such as buttons and forms
+├── api/          Functions that call the backend
+├── types/        TypeScript shapes for API data
+├── context/      Shared app state, including the theme
+├── constants/    Shared colors, spacing, and typography
+└── lib/          Utilities such as notifications
 ```
 
-Every file in `src/app/` is a route. Keep reusable components, hooks, and
-utilities outside that directory.
+### How a screen works
 
-## API and authentication
+Every file inside `src/app/` is a screen or navigation layout. This project
+uses **Expo Router**, so the file path becomes the URL-like route:
 
-The API client reads `EXPO_PUBLIC_API_URL` and defaults to
-`http://localhost:8000/api`. Requests use the current Clerk session token.
-Ensure the API is running and that its Clerk configuration belongs to the same
-Clerk application as `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`.
+```text
+src/app/bike/[id]/fuel/add.tsx
+```
 
-See the backend route reference in
-[`../server/README.md`](../server/README.md).
+The `[id]` part is a dynamic bike ID. Reusable UI should usually live in
+`src/components/`, not inside `src/app/`.
+
+### How a form saves data
+
+Most forms follow this flow:
+
+1. A screen renders a form component from `src/components/`.
+2. The form stores what the user types with React's `useState`.
+3. Pressing Save creates a typed object from `src/types/`.
+4. An API helper in `src/api/` sends that object to the backend.
+5. The screen refreshes its data and shows the updated result.
+
+For example, the shared [`DateField`](./src/components/ui/DateField.tsx) is
+used by Maintenance, Fuel, Service, and Document forms. It returns a normal
+JavaScript `Date`; the form converts it to an ISO string before sending it to
+the API.
+
+## Important native-module note
+
+The app uses native packages such as the date picker and notifications. Expo
+Go does not always contain every native package used by the project. If you
+add or change a native dependency, rebuild the development app:
+
+```bash
+npx expo run:android
+# or, on macOS:
+npx expo run:ios
+```
+
+For a cloud development build:
+
+```bash
+npx eas-cli@latest build --profile development
+```
+
+After the build completes, install that build on your device. Starting Metro
+with `npm start` does not itself install native code.
+
+## Useful commands
+
+Run these commands from the `mobile` folder:
+
+```bash
+npm start             # start Expo
+npm run android      # start Android app
+npm run ios          # start iOS app
+npm run web          # start web app
+npm run lint         # check JavaScript/TypeScript style
+npx tsc --noEmit     # check TypeScript types
+```
+
+Run lint and type checking before opening a pull request.
+
+## Main features
+
+- Clerk sign-up, sign-in, and session management
+- motorcycle garage management
+- bike dashboard and details
+- maintenance records and reminders
+- fuel tracking
+- service history
+- document tracking
+- shared date pickers for historical entries
+- light and dark themes
+- local reminder notifications
 
 ## Notifications
 
-Reminder notifications require a physical device. Simulators and emulators may
-not reliably receive them. The app creates the Android notification channel
-before requesting permission, then schedules future reminders locally. The
-production build includes the `expo-notifications` config plugin, so rebuild
-the native app after changing notification configuration.
+Reminder notifications work most reliably on a physical device. Simulators and
+emulators may not deliver them reliably. The app requests notification
+permission and schedules reminders locally.
+
+If notification configuration changes, rebuild the native app.
 
 ## Building with EAS
 
-Use EAS for cloud builds and releases:
+EAS creates installable builds in the cloud:
 
 ```bash
-npx eas-cli@latest build
+npx eas-cli@latest build --profile development
+npx eas-cli@latest build --profile preview
+npx eas-cli@latest build --profile production
 ```
 
-Configure signing credentials and build profiles before creating a production
-build. The Expo project ID and platform identifiers are configured in
-[`app.json`](./app.json).
+The build profiles are defined in [`eas.json`](./eas.json). The Expo project
+ID and Android/iOS identifiers are in [`app.json`](./app.json).
 
 ## Troubleshooting
 
 ### The app cannot reach the API
 
-1. Confirm the server is running.
-2. Confirm `EXPO_PUBLIC_API_URL` points to the correct host for the selected
-   device or emulator.
-3. Confirm the device and computer are on the same network when using a
-   physical device.
-4. Restart Expo after changing `.env` values.
+1. Check that the backend is running.
+2. Check `EXPO_PUBLIC_API_URL` in `mobile/.env`.
+3. Use the correct URL for your emulator or phone from the table above.
+4. For a physical phone, check that both devices are on the same Wi-Fi.
+5. Restart Expo after changing `.env`.
 
 ### Clerk authentication fails
 
-Check that `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is present, starts with the
-correct Clerk prefix, and belongs to the same environment as the backend
-credentials.
+Check that:
 
-### Native module changes are not reflected
+1. `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` exists in `.env`.
+2. It starts with the correct Clerk prefix.
+3. It belongs to the same Clerk project configured by the backend.
 
-Rebuild the development client after adding or changing a native dependency:
+### A native package is not found
+
+Install dependencies and rebuild the app:
 
 ```bash
+npm install
 npx expo run:android
 # or
 npx expo run:ios
 ```
+
+### The app looks stale after a code change
+
+Reload the Expo app. If that does not help, stop Expo and start it again:
+
+```bash
+npm start
+```
+
+Then use the reload option shown by Expo.

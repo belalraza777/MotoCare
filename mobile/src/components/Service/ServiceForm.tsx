@@ -15,6 +15,7 @@ import { X } from 'lucide-react-native';
 import { Button } from '../ui/Button';
 import { ChipSelect } from '../ui/ChipSelect';
 import { TextField } from '../ui/TextField';
+import { DateField } from '../ui/DateField';
 
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -63,6 +64,7 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
 
   // Form state for the service visit.
   const [odometer, setOdometer] = useState('');
+  const [date, setDate] = useState(new Date());
   const [workshop, setWorkshop] = useState('');
   const [notes, setNotes] = useState('');
   const [serviceCharge, setServiceCharge] = useState('');
@@ -96,7 +98,7 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
   // Build the API payload from the form values.
   const handleSubmit = () => {
     onSubmit({
-      date: new Date().toISOString(),
+      date: date.toISOString(),
       odometer: Number(odometer),
       workshop: workshop.trim() || undefined,
       notes: notes.trim() || undefined,
@@ -133,6 +135,7 @@ export function ServiceForm({ onSubmit, loading }: ServiceFormProps) {
             value={workshop}
             onChangeText={setWorkshop}
           />
+          <DateField label="Service date" value={date} onChange={setDate} />
 
           <TextField
             label="Odometer (km)"

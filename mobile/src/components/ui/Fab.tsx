@@ -1,9 +1,9 @@
 
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Plus } from 'lucide-react-native';
 
 import { useTheme } from '../../context/ThemeContext';
-import { Spacing, ThemeColors } from '../../constants/theme';
+import { Radius, Spacing, ThemeColors, Typography } from '../../constants/theme';
 
 interface FabProps {
   onPress: () => void;
@@ -20,13 +20,22 @@ export function Fab({
   const styles = createStyles(colors, bottomOffset);
 
   return (
-    <TouchableOpacity
-      style={styles.fab}
+    <Pressable
       onPress={onPress}
-      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={text === '+' ? 'Add' : text}
+      accessibilityHint="Tap to add a new item"
+      hitSlop={8}
+      style={({ pressed }) => [
+        styles.fab,
+        pressed && styles.fabPressed,
+      ]}
     >
-      <Plus color={colors.surface} size={24} strokeWidth={2.4} />
-    </TouchableOpacity>
+      <View style={styles.iconBubble}>
+        <Plus color={colors.surface} size={23} strokeWidth={2.6} />
+      </View>
+      {text !== '+' && <Text style={styles.text}>{text}</Text>}
+    </Pressable>
   );
 }
 
@@ -37,20 +46,39 @@ function createStyles(
   return StyleSheet.create({
     fab: {
       position: 'absolute',
-      bottom: Spacing.lg + 8 + bottomOffset,
-      right: Spacing.lg + 8,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+      bottom: Spacing.lg + 12 + bottomOffset,
+      right: Spacing.lg,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
       backgroundColor: colors.primary,
+      borderWidth: 3,
+      borderColor: colors.primarySoft,
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 4,
+      elevation: 7,
       shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.24,
+      shadowRadius: 7,
+    },
+    fabPressed: {
+      opacity: 0.86,
+      transform: [{ scale: 0.94 }],
+    },
+    iconBubble: {
+      width: 34,
+      height: 34,
+      borderRadius: Radius.lg,
+      backgroundColor: 'rgba(255, 255, 255, 0.14)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    text: {
+      color: colors.surface,
+      fontSize: Typography.size.xs,
+      fontWeight: Typography.weight.bold,
+      marginTop: 1,
     },
   });
 }
-

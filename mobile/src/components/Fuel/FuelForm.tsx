@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextField } from '../ui/TextField';
+import { DateField } from '../ui/DateField';
 import { Button } from '../ui/Button';
 import { Fuel, CreateFuelInput } from '../../types/fuel.types';
 import { useTheme } from '../../context/ThemeContext';
@@ -35,9 +36,7 @@ export function FuelForm({
   const styles = createStyles(colors);
 
   const [date, setDate] = useState(
-    initialValue?.date
-      ? initialValue.date.slice(0, 10)
-      : new Date().toISOString().slice(0, 10)
+    initialValue?.date ? new Date(initialValue.date) : new Date()
   );
 
   const [litres, setLitres] = useState(
@@ -50,7 +49,7 @@ export function FuelForm({
 
   const handleSubmit = () => {
     onSubmit({
-      date: new Date(date).toISOString(),
+      date: date.toISOString(),
       litres: Number(litres),
       totalAmount: Number(totalAmount),
     });
@@ -73,12 +72,7 @@ export function FuelForm({
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <TextField
-            label="Date"
-            placeholder="YYYY-MM-DD"
-            value={date}
-            onChangeText={setDate}
-          />
+          <DateField label="Date" value={date} onChange={setDate} />
 
           <TextField
             label="Litres"

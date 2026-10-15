@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextField } from '../ui/TextField';
+import { DateField } from '../ui/DateField';
 import { Button } from '../ui/Button';
 import { Document, DocumentType, SaveDocumentInput } from '../../types/document.types';
 import { useTheme } from '../../context/ThemeContext';
@@ -33,8 +34,12 @@ export function DocumentForm({ type,
   const styles = createStyles(colors);
 
   const [title, setTitle] = useState(initialValue?.title ?? '');
-  const [issueDate, setIssueDate] = useState(initialValue?.issueDate?.slice(0, 10) ?? '');
-  const [expiryDate, setExpiryDate] = useState(initialValue?.expiryDate?.slice(0, 10) ?? '');
+  const [issueDate, setIssueDate] = useState<Date | undefined>(
+    initialValue?.issueDate ? new Date(initialValue.issueDate) : undefined
+  );
+  const [expiryDate, setExpiryDate] = useState(
+    initialValue?.expiryDate ? new Date(initialValue.expiryDate) : new Date()
+  );
   // insurance-only
   const [company, setCompany] = useState(initialValue?.company ?? '');
   const [policyNumber, setPolicyNumber] = useState(initialValue?.policyNumber ?? '');
@@ -47,8 +52,8 @@ export function DocumentForm({ type,
     onSubmit({
       type,
       title: type === 'OTHER' ? title.trim() : undefined,
-      expiryDate: new Date(expiryDate).toISOString(),
-      issueDate: issueDate ? new Date(issueDate).toISOString() : undefined,
+      expiryDate: expiryDate.toISOString(),
+      issueDate: issueDate?.toISOString(),
       ...(type === 'INSURANCE'
         ? { company: company.trim(), policyNumber: policyNumber.trim(), insuredAmount: insuredAmount ? Number(insuredAmount) : undefined }
         : { certificateNumber: certificateNumber.trim() || undefined }),
@@ -56,7 +61,7 @@ export function DocumentForm({ type,
   };
 
   // validation: expiryDate is required, title is required for OTHER
-  const canSubmit = expiryDate && (type !== 'OTHER' || title.trim());
+  const canSubmit = type !== 'OTHER' || title.trim();
   const screenTitle = initialValue ? `Edit ${TITLES[type]}` : `Add ${TITLES[type]}`;
 
   return (
@@ -90,8 +95,17 @@ export function DocumentForm({ type,
             />
           )}
 
-          <TextField label="Issue Date (optional)" placeholder="YYYY-MM-DD" value={issueDate} onChangeText={setIssueDate} />
-          <TextField label="Expiry Date" placeholder="YYYY-MM-DD" value={expiryDate} onChangeText={setExpiryDate} />
+          <DateField
+            label="Issue Date (optional)"
+            value={issueDate ?? new Date()}
+            onChange={setIssueDate}
+          />
+          <DateField
+            label="Expiry Date"
+            value={expiryDate}
+            onChange={setExpiryDate}
+            maximumDate={null}
+          />
 
           <Button label={loading ? 'Saving...' : 'Save'} onPress={handleSubmit} loading={loading} disabled={!canSubmit} />
           

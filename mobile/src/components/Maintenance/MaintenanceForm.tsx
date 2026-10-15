@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TextField } from '../../components/ui/TextField';
+import { DateField } from '../../components/ui/DateField';
 import { ChipSelect } from '../../components/ui/ChipSelect';
 import { Button } from '../../components/ui/Button';
 import { Maintenance, MaintenanceType, CreateMaintenanceInput } from '../../types/maintenance.types';
@@ -28,6 +29,9 @@ export function MaintenanceForm({ initialValue, onSubmit, onDelete, submitLabel,
 
   const [type, setType] = useState<MaintenanceType>(initialValue?.type ?? 'ENGINE_OIL');
   const [brand, setBrand] = useState(initialValue?.brand ?? '');
+  const [date, setDate] = useState(
+    initialValue?.date ? new Date(initialValue.date) : new Date()
+  );
   const [odometer, setOdometer] = useState(initialValue?.odometer?.toString() ?? '');
   const [cost, setCost] = useState(initialValue?.cost?.toString() ?? '');
   const [notes, setNotes] = useState(initialValue?.notes ?? '');
@@ -36,7 +40,7 @@ export function MaintenanceForm({ initialValue, onSubmit, onDelete, submitLabel,
     onSubmit({
       type,
       brand: brand.trim() || undefined,
-      date: initialValue?.date ?? new Date().toISOString(),
+      date: date.toISOString(),
       odometer: Number(odometer),
       cost: cost ? Number(cost) : 0,
       notes: notes.trim() || undefined,
@@ -68,6 +72,7 @@ export function MaintenanceForm({ initialValue, onSubmit, onDelete, submitLabel,
           />
 
           <TextField label="Brand (optional)" placeholder="e.g. Motul" value={brand} onChangeText={setBrand} />
+          <DateField label="Date" value={date} onChange={setDate} />
           <TextField label="Odometer (km)" placeholder="e.g. 8500" value={odometer} onChangeText={setOdometer} keyboardType="numeric" />
           <TextField label="Cost (₹)" placeholder="e.g. 650" value={cost} onChangeText={setCost} keyboardType="numeric" />
           <TextField

@@ -71,15 +71,15 @@ export default function BikeDashboardScreen() {
         data.serviceDue.nextDueKm,
       ].join('|');
 
-      if (lastScheduledFor.current !== reminderKey) {
-        scheduleBikeReminders(data)
-          .then(() => {
-            lastScheduledFor.current = reminderKey;
-          })
-          .catch((notificationError) => {
-            console.error('Failed to schedule bike reminders', notificationError);
-          });
-      }
+      // if (lastScheduledFor.current !== reminderKey) {
+      //   scheduleBikeReminders(data)
+      //     .then(() => {
+      //       lastScheduledFor.current = reminderKey;
+      //     })
+      //     .catch((notificationError) => {
+      //       console.error('Failed to schedule bike reminders', notificationError);
+      //     });
+      // }
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Failed to load dashboard');
     } finally {
